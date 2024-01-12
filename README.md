@@ -2,7 +2,7 @@
 
 <table border="0">
   <tr>
-    <td width="160px" valign="top"><img src="media/icon_semaphore.png" align="left" height="128" width="128" /></td>
+    <td width="160px" valign="top"><img src="media/icon_podman.png" align="left" height="128" width="128" /></td>
     <td>Ansible role voor installatie en configuratie van RedHat Podman<br/> 
         <br/>
         Website van leverancier: `https://podman.io`<br/>
@@ -31,7 +31,6 @@ Voorbeeld:
 <br/>
 <br/>
 
-
 action: **uninstall**<br/>
 De-installatie van RedHat Podman.<br/>
 variables:<br/>
@@ -48,7 +47,6 @@ Voorbeeld:
 ```
 <br/>
 <br/>
-
 
 action: **update**<br/>
 Update van RedHat Podman.<br/>
@@ -67,7 +65,6 @@ Voorbeeld:
 ```
 <br/>
 <br/>
-
 
 ***
 
