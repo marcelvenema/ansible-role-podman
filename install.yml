@@ -1,0 +1,7 @@
+- name: Install and configure Podman (no roles)
+  hosts: localhost
+  tasks:
+
+    - name: Install Podman
+      ansible.builtin.include_tasks:
+        file: tasks/install.yml

@@ -87,10 +87,35 @@ Voorbeeld:
 ## Afhankelijkheden
 Afhankelijkheden zijn benoemd in het **requirements.yml** bestand. Gebruik `ansible-galaxy install ./requirements.yml --force` voor installatie.<br/>
 
+Indien deze role in andere playbooks of Ansible projecten wordt gebruikt, dient de URL van deze rol te worden toegevoegd aan het `requirements.yml` bestand. Via bovenstaand command wordt de rol dan in de juiste folderstructuur geplaatst.<br/>
+<br/>
+
 
 ## Installatie en configuratie
-Installatie via action 'install'.<br/>
-Voorbeeld voor installatie RedHat Podman:
+Installatie via de action variabele <kbd>install</kbd>. (Her-)configuratie via de action variabele <kbd>configure</kbd>.<br/>
+
+Bij gebruik van deze rol in andere playbooks of Ansible projecten:<br/>
+```
+- name: Install and configure Podman
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : install
+```
+<br/>
+
+Bij gebruik als stand-alone Ansible project:<br/>
+```
+- name: Install and configure Podman
+  hosts: localhost
+  tasks:
+
+    - name: Install Podman
+      ansible.builtin.include_tasks:
+        file: tasks/install.yml
+```
+<br/>
 
 
 ## Overige informatie
