@@ -17,7 +17,7 @@
 action: **install**<br/>
 Installatie van laatste versie van RedHat Podman. Basis configuratie.<br/>
 variables:<br/>
-<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+<kbd>uninstall</kbd> : (optioneel) true/false, de-installatie voor installatie.<br/>
 
 Voorbeeld:
 ```
