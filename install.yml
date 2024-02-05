@@ -1,5 +1,5 @@
 - name: Install and configure Podman (no roles)
-  hosts: localhost
+  hosts: lab
   become: true
   tasks:
 

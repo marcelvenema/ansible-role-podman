@@ -54,7 +54,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 # Start Podman on boot
-- name: Start podman on boot
+- name: Start Podman on boot
   ansible.builtin.service:
     name: podman
     enabled: yes
