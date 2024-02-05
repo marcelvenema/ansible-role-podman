@@ -1,0 +1,8 @@
+- name: Update Podman (no roles)
+  hosts: localhost
+  become: true
+  tasks:
+
+    - name: Update Podman
+      ansible.builtin.include_tasks:
+        file: tasks/update.yml

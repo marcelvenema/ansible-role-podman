@@ -1,5 +1,6 @@
 - name: Install and configure Podman (no roles)
   hosts: localhost
+  become: true
   tasks:
 
     - name: Install Podman
