@@ -17,6 +17,10 @@ actions:
   - update_description: "Update van Podman naar laatste versie."
   - update_icon: "media/icon_podman.png"
 
+  - start
+
+  - stop
+
 install_properties:
   - repository_url
   - repository_url_description : "URL met locatie van repository. Kan een url zijn of pad naar lokaal bestand."

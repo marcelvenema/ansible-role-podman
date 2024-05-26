@@ -27,3 +27,12 @@
 - name: Update
   ansible.builtin.include_tasks: update.yml
   when: action == "update"
+
+- name: Start
+  ansible.builtin.include_tasks: start.yml
+  when: action == "start"
+
+- name: Stop
+  ansible.builtin.include_tasks: stop.yml
+  when: action == "stop"
+

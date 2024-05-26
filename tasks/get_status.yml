@@ -32,3 +32,8 @@
   set_fact:
     action: "install"
   when: "'podman' not in ansible_facts.packages"
+
+# Debug variable
+- name: Debug action variable
+  debug:
+    var: action
