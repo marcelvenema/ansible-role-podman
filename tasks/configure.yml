@@ -3,3 +3,12 @@
 #########################################################
 ## Configuration                                       ##
 #########################################################
+
+# Create data folder /data to store container data
+- name: "Create data folder {{ podman_data_folder }}"
+  ansible.builtin.file:
+    path: "{{ podman_data_folder }}"
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: 0755
