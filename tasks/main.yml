@@ -1,11 +1,11 @@
---- 
+---
 
 # Show message
 - name: Show Information message
   debug:
     msg: "Starting role {{ role_name }}... action: {{ action }}."
 
-# If action variable is not defined, gather status of the service and set action variable  
+# If action variable is not defined, gather status of the service and set action variable
 - name: Determine action variable status
   ansible.builtin.include_tasks: get_status.yml
   when: action is not defined
@@ -32,13 +32,21 @@
   when: action == "configure"
 
 - name: Update role
-  ansible.builtin.include_tasks: update.yml
+  ansible.builtin.include_tasks: containers.yml
   when: action == "update"
 
 - name: Start role
-  ansible.builtin.include_tasks: start.yml
+  ansible.builtin.include_tasks: containers.yml
   when: action == "start"
 
 - name: Stop role
-  ansible.builtin.include_tasks: stop.yml
+  ansible.builtin.include_tasks: containers.yml
   when: action == "stop"
+
+- name: Export Podman container
+  ansible.builtin.include_tasks: containers.yml
+  when: action == "export_container"
+
+- name: Export Podman image
+  ansible.builtin.include_tasks: images.yml
+  when: action == "export_image"

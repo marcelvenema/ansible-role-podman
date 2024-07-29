@@ -18,8 +18,20 @@ actions:
   - update_icon: "media/icon_podman.png"
 
   - start
+  - start_description: "Start Podman service."
+  - start_icon: "media/icon_podman.png"
 
   - stop
+  - stop_description: "Stop Podman service."
+  - stop_icon: "media/icon_podman.png"
+
+  - export_container
+  - export_container_description: "Exporteer container naar tarball."
+  - export_container_icon: "media/icon_podman.png"
+
+  - export_image
+  - export_image_description: "Exporteer image naar tarball."
+  - export_image_icon: "media/icon_podman.png"
 
 install_properties:
   - repository_url

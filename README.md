@@ -3,7 +3,7 @@
 <table border="0">
   <tr>
     <td width="160px" valign="top"><img src="media/icon_podman.png" align="left" height="128" width="128" /></td>
-    <td>Ansible role voor installatie en configuratie van RedHat Podman<br/> 
+    <td>Ansible role voor installatie en configuratie van RedHat Podman<br/>
         <br/>
         Website van leverancier: `https://podman.io`<br/>
         <br/>
@@ -13,6 +13,7 @@
 
 # Diensten:
 
+## Deployment
 
 action: **install**<br/>
 Installatie van laatste versie van RedHat Podman. Basis configuratie.<br/>
@@ -66,6 +67,19 @@ Voorbeeld:
 ```
 <br/>
 <br/>
+
+## Configuratie
+
+
+## Beheer
+
+action: **export_image**<br/>
+Export Podman image naar tarball.<br/>
+variables:<br/>
+<kbd>podman_repository_url</kbd> :
+<kbd>podman_repository_tag</kbd> (optioneel) :
+<kbd>podman_export_folder</kbd>
+
 
 ***
 

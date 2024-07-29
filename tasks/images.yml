@@ -1,0 +1,63 @@
+
+#########################################################
+## Podman Images module                                ##
+#########################################################
+
+# Validate global variables.
+- name: Validate global variables for Podman images module.
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - podman_image_name
+
+#########################################################
+## Export image                                        ##
+#########################################################
+
+- name: Export Podman image
+  when: action == "export_image"
+  block:
+
+    # Debug message
+    - name: Information message
+      ansible.builtin.debug:
+        msg: "Export podman image {{ podman_image_name }} from repository {{ podman_repository_url }}:{{ podman_repository_tag }}."
+
+    # Ensure export folder is present
+    - name: Ensure podman export folder is present
+      ansible.builtin.file:
+        path: "{{ podman_export_folder }}"
+        state: directory
+        mode: '0755'
+
+    # Set podman_repository_tag if not defined
+    - name: Set podman_repository_tag if not defined
+      set_fact:
+        podman_repository_tag: "{{ podman_repository_tag | default('latest') }}"
+
+    # Pull image from repository
+    - name: "Pull {{ podman_image_name }} image from repository {{ podman_repository_url}}:{{ podman_repository_tag }}"
+      containers.podman.podman_image:
+        name: "{{ podman_repository_url }}"
+        tag: "{{ podman_repository_tag }}"
+      register: pull_result
+
+    # Debug image
+    - name: Debug image
+      ansible.builtin.debug:
+        msg: "{{ podman_repository_url }}:{{ podman_repository_tag }}"
+
+
+    # Save image to tar file using shell command
+    - name: Save image to tar file
+      ansible.builtin.shell: "podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ podman_repository_url }}:{{ podman_repository_tag }}"
+      register: save_result
+
+
+#########################################################
+##                                                     ##
+#########################################################
