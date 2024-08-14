@@ -30,7 +30,6 @@ Voorbeeld:
        action : install
 ```
 <br/>
-<br/>
 
 action: **uninstall**<br/>
 De-installatie van RedHat Podman.<br/>
@@ -47,7 +46,6 @@ Voorbeeld:
      vars:
        action : uninstall
 ```
-<br/>
 <br/>
 
 action: **update**<br/>
@@ -66,7 +64,6 @@ Voorbeeld:
        action : update
 ```
 <br/>
-<br/>
 
 ## Configuratie
 
@@ -76,9 +73,9 @@ Voorbeeld:
 action: **export_image**<br/>
 Export Podman image naar tarball.<br/>
 variables:<br/>
-<kbd>podman_repository_url</kbd> :
-<kbd>podman_repository_tag</kbd> (optioneel) :
-<kbd>podman_export_folder</kbd>
+<kbd>podman_repository_url</kbd> : URL met locatie van container repository.<br/>
+<kbd>podman_repository_tag</kbd> (optioneel) : release of versienummer van het container image. standaard is 'latest'.<br/>
+<kbd>podman_export_folder</kbd> Folder voor export images, bijvoorbeeld '/tmp/'.<br/>
 
 
 ***
