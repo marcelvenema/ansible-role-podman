@@ -4,7 +4,7 @@
 #########################################################
 
 # Validate global variables.
-- name: Validate global variables for Podman images module.
+- name: Validate variables for Podman containers module...
   ansible.builtin.assert:
     that: "varitem is defined"
     fail_msg: "Required variable '{{ varitem }}' has not been provided."
@@ -19,7 +19,7 @@
 ## Start container                                     ##
 #########################################################
 
-- name: Start podman container
+- name: Start Podman container...
   when: action == "start"
   block:
 
@@ -37,7 +37,7 @@
 ## Stop container                                      ##
 #########################################################
 
-- name: Start podman container
+- name: Stop Podman container...
   when: action == "stop"
   block:
 
@@ -54,11 +54,11 @@
 ## Update container                                    ##
 #########################################################
 
-- name: Start podman container
+- name: Update Podman container...
   when: action == "update"
   block:
 
-    - name: Upgrade Podman package
+    - name: Update Podman package...
       ansible.builtin.package:
         name: "podman"
         state: latest
@@ -67,7 +67,7 @@
 ## Export container                                    ##
 #########################################################
 
-- name: Export podman container
+- name: Export Podman container...
   when: action == "export_container"
   block:
 

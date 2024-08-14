@@ -5,13 +5,13 @@
 #########################################################
 
 # Uninstall Podman
-- name: Uninstall Podman on RHEL
+- name: Uninstall Podman on RHEL platform...
   ansible.builtin.package:
     name: podman
     state: absent
 
 # Delete podman files
-- name: Delete Podman files
+- name: Delete Podman files...
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent

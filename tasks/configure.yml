@@ -5,7 +5,7 @@
 #########################################################
 
 # Create data folder /data to store container data
-- name: "Create data folder {{ podman_data_folder }}"
+- name: "Create data folder {{ podman_data_folder }}..."
   ansible.builtin.file:
     path: "{{ podman_data_folder }}"
     state: directory
@@ -18,13 +18,13 @@
 #########################################################
 
 # Create podman user group
-- name: Create Podman user group
+- name: Create Podman user group...
   ansible.builtin.group: 
     name: "podman"
   become: true
 
 # Create podman user
-- name: Create Podman user
+- name: Create Podman user...
   ansible.builtin.user:
     name: "podman"
     group: "podman"
@@ -35,11 +35,11 @@
     state: present
 
 # Enable linger for user
-- name: Enable linger for Podman user
+- name: Enable linger for Podman user...
   ansible.builtin.command: "loginctl enable-linger podman"
 
 # Create folder for ansible tmp files
-- name: Create home folders for user podman
+- name: Create home folders for Podman user...
   ansible.builtin.file:
     path: /home/podman/.ansible/tmp
     state: directory
@@ -47,7 +47,7 @@
     mode: 0755
 
 # Create systemd folder for user
-- name: Create systemd folder for user podman
+- name: Create systemd folder for Podman user...
   ansible.builtin.file:
     path: "/home/podman/.config/systemd/user/"
     state: directory
