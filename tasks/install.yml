@@ -1,7 +1,7 @@
 --- 
 
 #########################################################
-## Pre-installation                                    ##
+## Gather information                                  ##
 #########################################################
 
 # Gather installed packages
@@ -9,11 +9,20 @@
   ansible.builtin.package_facts:
     manager: auto
 
+# Set action_parameters variable to pameter list in actions where key is equal to action
+- name: "Gather variables for action ({{ action }})..."
+  set_fact:
+    action_parameters: "{{ (actions | map('dict2items') | map('first') | selectattr('key', 'equalto', action) | map(attribute='value') | first).parameters }}"
+
 # Check if Podman is installed
 - name: Determine Podman container infrastructure...
   ansible.builtin.debug:
     msg: "Podman is not installed. Please wait while installing Podman prerequisites..."
   when: '"podman" not in ansible_facts.packages'
+
+#########################################################
+## Uninstall                                           ##
+#########################################################
 
 # Run uninstall if Podman is installed and uninstall is set
 - name: Run uninstall action if Podman is installed...
@@ -22,6 +31,10 @@
     - '"podman" in ansible_facts.packages'
     - uninstall is defined
     - uninstall == true
+
+#########################################################
+## Pre-installation                                    ##
+#########################################################
 
 # Install Podman prerequisites
 - name: Install Podman prerequisites...
@@ -34,7 +47,7 @@
   when: ansible_os_family == "RedHat"
 
 #########################################################
-## Pre-installation                                    ##
+## Installation                                        ##
 #########################################################
 
 # Install Podman on server
@@ -67,6 +80,8 @@
 # Configure Podman
 - name: Start configure task...
   ansible.builtin.include_tasks: configure.yml
+  vars:
+    action: "configure"
 
 #########################################################
 ## Post-install                                        ##

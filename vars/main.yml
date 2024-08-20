@@ -1,47 +1,38 @@
 ---
 
 actions:
-  - install
-  - install_description: "Installatie van laatste versie van RedHat Podman. Basis configuratie."
-  - install_icon: "media/icon_podman.png"
+  - start:
+      description: "Start Podman service."
+      icon: "media/icon_podman.png"
 
-  - uninstall
-  - uninstall_description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
-  - uninstall_icon: "media/icon_podman.png"
+  - stop: 
+      description: "Stop Podman service."
+      icon: "media/icon_podman.png"
 
-  - configure
-  - configure_description: "Configureer RedHat Podman."
-  - configure_icon: "media/icon_podman.png"
+  - install:
+      description: Installatie van laatste versie van RedHat Podman. Basis configuratie.
+      icon: media/icon_podman.png
+      parameters:
+        - uninstall
 
-  - update
-  - update_description: "Update van Podman naar laatste versie."
-  - update_icon: "media/icon_podman.png"
+  - uninstall:
+      description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
+      icon: "media/icon_podman.png"
 
-  - start
-  - start_description: "Start Podman service."
-  - start_icon: "media/icon_podman.png"
+  - configure:
+      description: "Configureer RedHat Podman."
+      icon: "media/icon_podman.png"
+      parameters:
+        - uninstall
 
-  - stop
-  - stop_description: "Stop Podman service."
-  - stop_icon: "media/icon_podman.png"
+  - update:
+      description: "Update van Podman naar laatste versie."
+      icon: "media/icon_podman.png"
 
-  - export_container
-  - export_container_description: "Exporteer container naar tarball."
-  - export_container_icon: "media/icon_podman.png"
+  - export_container: 
+      description: "Exporteer container naar tarball."
+      icon: "media/icon_podman.png"
 
-  - export_image
-  - export_image_description: "Exporteer image naar tarball."
-  - export_image_icon: "media/icon_podman.png"
-
-install_properties:
-  - repository_url
-  - repository_url_description : "URL met locatie van repository. Kan een url zijn of pad naar lokaal bestand."
-  - repository_url_required : true
-  - repository_tag
-  - repository_tag_description : "Release of versienummer van het image. Standaard is 'latest'."
-  - data_dir
-  - data_dir_description : "Folder waarin de data van Podman wordt opgeslagen."
-  - platform
-  - platform_description : "installeer op specifiek platform, bijvoorbeeld podman, kubernetes, linux. Standaard is autodetect."
-  - uninstall
-  - uninstall_description : "Start de-installatie voordat de installatie wordt gestart. true/false. Standaard is 'true'."
+  - export_image: 
+      description: "Exporteer image naar tarball."
+      icon: "media/icon_podman.png"
