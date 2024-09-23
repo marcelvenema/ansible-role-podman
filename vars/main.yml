@@ -5,7 +5,7 @@ actions:
       description: "Start Podman service."
       icon: "media/icon_podman.png"
 
-  - stop: 
+  - stop:
       description: "Stop Podman service."
       icon: "media/icon_podman.png"
 
@@ -13,7 +13,10 @@ actions:
       description: Installatie van laatste versie van RedHat Podman. Basis configuratie.
       icon: media/icon_podman.png
       parameters:
-        - uninstall
+        - uninstall:
+            description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
+            icon: "media/icon_podman.png"
+            required: false
 
   - uninstall:
       description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
@@ -23,16 +26,18 @@ actions:
       description: "Configureer RedHat Podman."
       icon: "media/icon_podman.png"
       parameters:
-        - uninstall
+        - uninstall:
+            description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
+            icon: "media/icon_podman.png"
 
   - update:
       description: "Update van Podman naar laatste versie."
       icon: "media/icon_podman.png"
 
-  - export_container: 
+  - export_container:
       description: "Exporteer container naar tarball."
       icon: "media/icon_podman.png"
 
-  - export_image: 
+  - export_image:
       description: "Exporteer image naar tarball."
       icon: "media/icon_podman.png"
