@@ -14,11 +14,13 @@
 # Diensten:
 
 ## Deployment
+Acties voor deployment.<br/>
 
 action: **install**<br/>
 Installatie van laatste versie van RedHat Podman. Basis configuratie.<br/>
 variables:<br/>
-<kbd>uninstall</kbd> : (optioneel) true/false, de-installatie voordat installatie plaatsvindt.<br/>
+<kbd>uninstall</kbd> (optioneel) : true/false, de-installatie voordat installatie plaatsvindt.<br/>
+<kbd>podman_data_folder</kbd> (optioneel) : Lokale folder voor opslag Podman data, standaard `/data`.<br/>
 
 Voorbeeld:
 ```
@@ -28,6 +30,7 @@ Voorbeeld:
    - role: podman
      vars:
        action : install
+       uninstall : true
 ```
 <br/>
 
@@ -66,9 +69,12 @@ Voorbeeld:
 <br/>
 
 ## Configuratie
+Acties voor configuratie.<br/>
 
+**Geen actions gedefinieerd.**
 
 ## Beheer
+Acties voor beheer.<br/>
 
 action: **export_image**<br/>
 Export Podman image naar tarball.<br/>
@@ -76,6 +82,48 @@ variables:<br/>
 <kbd>podman_repository_url</kbd> : URL met locatie van container repository.<br/>
 <kbd>podman_repository_tag</kbd> (optioneel) : release of versienummer van het container image. standaard is 'latest'.<br/>
 <kbd>podman_export_folder</kbd> Folder voor export images, bijvoorbeeld '/tmp/'.<br/>
+
+Voorbeeld:
+```
+- name: Export Podman image
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : export_image
+       podman_repository_url: docker.io/hashicorp/vault
+       podman_export_folder: /data/export
+```
+
+action: **start**<br/>
+Start container. (IN ONTWIKKELING)<br/>
+variables:<br/>
+<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+
+Voorbeeld:
+```
+- name: Export Podman image
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : start
+```
+
+action: **stop**<br/>
+Stop container. (IN ONTWIKKELING)<br/>
+variables:<br/>
+<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+
+Voorbeeld:
+```
+- name: Export Podman image
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : stop
+```
 
 
 ***

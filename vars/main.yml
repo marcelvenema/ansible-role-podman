@@ -17,6 +17,10 @@ actions:
             description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
             icon: "media/icon_podman.png"
             required: false
+        - podman_data_folder:
+            description: "Lokale folder voor opslag Podman data."
+            icon: "media/icon_podman.png"
+            required: false
 
   - uninstall:
       description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."

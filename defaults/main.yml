@@ -1,3 +1,3 @@
 ---
 
-podman_data_folder: "/data/"
+podman_data_folder: "/data"

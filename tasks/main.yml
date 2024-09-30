@@ -1,5 +1,9 @@
 ---
 
+#########################################################
+## Main module for podman ansible rol                  ##
+#########################################################
+
 # Show message
 - name: Show action message
   debug:
@@ -36,6 +40,8 @@
   ansible.builtin.include_tasks: containers.yml
   when: action == "update"
 
+# -------------------------------------------------------
+
 - name: Start start action...
   ansible.builtin.include_tasks: containers.yml
   when: action == "start"
@@ -43,6 +49,8 @@
 - name: Start stop action...
   ansible.builtin.include_tasks: containers.yml
   when: action == "stop"
+
+# -------------------------------------------------------
 
 - name: Start export_container action...
   ansible.builtin.include_tasks: containers.yml
