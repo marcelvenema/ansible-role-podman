@@ -10,7 +10,7 @@ actions:
       icon: "media/icon_podman.png"
 
   - install:
-      description: Installatie van laatste versie van RedHat Podman. Basis configuratie.
+      description: Installatie en configuratie van laatste versie van RedHat Podman.
       icon: media/icon_podman.png
       parameters:
         - uninstall:
@@ -18,30 +18,84 @@ actions:
             icon: "media/icon_podman.png"
             required: false
         - podman_data_folder:
-            description: "Lokale folder voor opslag Podman data."
+            description: "Lokale folder voor opslag van Podman container data. Standaard is /data."
+            icon: "media/icon_podman.png"
+            required: false.
+
+  - uninstall:
+      description: "De-installatie van RedHat Podman. Verwijderd containers, bestanden, gebruikers en groepen."
+      icon: "media/icon_podman.png"
+      parameters:
+        - podman_data_folder:
+            description: "Lokale folder voor opslag van Podman container data.Standaard is /data."
             icon: "media/icon_podman.png"
             required: false
 
-  - uninstall:
-      description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
-      icon: "media/icon_podman.png"
-
   - configure:
-      description: "Configureer RedHat Podman."
+      description: "Configureer RedHat Podman. Aanmaken gebruikers en groepen."
       icon: "media/icon_podman.png"
       parameters:
-        - uninstall:
-            description: "De-installatie van RedHat Podman. Verwijderd de container, bestanden, gebruikers en groepen."
+        - podman_data_folder:
+            description: "Lokale folder voor opslag van Podman container data. Standaard is /data."
             icon: "media/icon_podman.png"
+            required: false.
 
   - update:
       description: "Update van Podman naar laatste versie."
+      icon: "media/icon_podman.png"
+
+# -------------------------------------------------------
+
+  - start_container:
+      description: "Start container."
+      icon: "media/icon_podman.png"
+
+  - stop_container:
+      description: "Stop container."
       icon: "media/icon_podman.png"
 
   - export_container:
       description: "Exporteer container naar tarball."
       icon: "media/icon_podman.png"
 
+  - import_container:
+      description: "Installeer container."
+      icon: "media/icon_podman.png"
+
+# -------------------------------------------------------
+
   - export_image:
       description: "Exporteer image naar tarball."
       icon: "media/icon_podman.png"
+
+
+
+# -------------------------------------------------------
+
+  - create_volumes:
+      description: "Maak volume(s) aan voor container opslag."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_volumes:
+            description: "Array van volumes en mappings."
+            icon: "media/icon_podman.png"
+            required: true
+        - volume_owner:
+            description: "Eigenaar van volume bestanden."
+            icon: "media/icon_podman.png"
+            required: false
+
+  - destroy_volumes:
+      description: "Verwijder volume(s) voor container opslag."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_volumes:
+            description: "Array van volumes en mappings."
+            icon: "media/icon_podman.png"
+            required: true
+
+  - copy_to_volume:
+      description: "Kopieer bestanden naar volume."
+      icon: "media/icon_podman.png"
+
+# -------------------------------------------------------

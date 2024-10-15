@@ -1,0 +1,192 @@
+---
+
+#########################################################
+## Podman Import Container module                      ##
+#########################################################
+
+# Validate global variables.
+- name: Validate variables for Podman containers module...
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - container_repository_url
+    - container_name
+    - container_ports
+    - container_volumes
+    - container_env
+
+#########################################################
+## Import container image                              ##
+#########################################################
+# Pull container image, if failed try to use local file
+# local file can be http, https, ftp or local file
+
+# If tag is not defined, set value to latest
+- name: Register variable (container_repoitory_tag)
+  ansible.builtin.set_fact:
+    container_repository_tag: "latest"
+  when: container_repository_tag is not defined or container_repository_tag == ""
+
+# Show information
+- name: Show information
+  ansible.builtin.debug:
+    msg: "Get container image from registry. this may take a while..."
+
+# Pull image from repository to local image repository. If failed, lookup local image file.
+- name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag }}"
+  containers.podman.podman_image:
+    name: "{{ container_repository_url }}"
+    tag: "{{ container_repository_tag }}"
+  register: pull_result
+  ignore_errors: true
+
+# If pull failed, try to use local file
+- name: Install local image file
+  when: pull_result is failed
+  block:
+
+    # Show information message
+    - name: Show information message
+      ansible.builtin.debug:
+        msg: "Cannot pull from container repository, trying to load from file..."
+
+    # Delete local temp file
+    - name: "Delete local file /tmp/{{ container_name }}"
+      ansible.builtin.file:
+        path: "/tmp/{{ container_name }}.tar"
+        state: absent
+
+    # repository_url is a local container file, check if file exists on ansible host
+    - name: Check if repository_url is a local container file
+      ansible.builtin.stat:
+        path: "{{ container_repository_url }}"
+      register: container_repository_url_result
+      delegate_to: localhost
+
+   # Copy image file to destination if local file
+    - name: Copy container image file to destination
+      ansible.builtin.copy:
+        src: "{{ container_repository_url }}"
+        dest: "/tmp/{{ container_name }}.tar"
+      when: 
+        - container_repository_url_result.stat.exists == true
+
+    # Download local file if http or https
+        - name: "Download file from {{ container_repository_url }}"
+          ansible.builtin.get_url:
+            url: "{{ container_repository_url }}"
+            dest: "/tmp/{{ container_name }}.tar"
+          when: ("http" in container_repository_url) or ("ftp" in container_repository_url) # https is included
+        
+    # check if container file exists
+    - name: "Check if /tmp/{{ container_name }}.tar exists..."
+      ansible.builtin.stat:
+        path: "/tmp/{{ container_name }}.tar"
+      register: container_tar_result
+
+    # Fail if image file not found
+    - name: Fail if container image file not found
+      ansible.builtin.fail:
+        msg: "Repository URL {{ container_repository_url }} not found. Container image file location not found. Cannot continue..."
+      when: 
+        - container_tar_result.stat.exists == false
+
+    ##################################
+    # Checksum image                 # 
+    ##################################
+
+    # If checksum contains :, split it in checksum and algorithm
+    - name: Split checksum and algorithm
+      ansible.builtin.set_fact:
+        repository_checksum: "{{ container_repository_checksum.split(':')[1] }}"
+        repository_checksum_algorithm: "{{ container_repository_checksum.split(':')[0] }}"
+      when: container_repository_checksum is defined and ":" in container_repository_checksum
+
+    # Get checksum of container file.tar
+    - name: Get checksum of local container file
+      ansible.builtin.stat:
+        path: "/tmp/{{ container_name }}.tar"
+        checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
+        get_checksum: yes
+      register: checksum_result
+      when : container_repository_checksum is defined 
+
+    # Fail when checksum is not the same
+    - name: Fail when checksum is not correct
+      ansible.builtin.fail:
+        msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
+      when: 
+        - container_repository_checksum is defined
+        - checksum_result.stat.checksum != role_repository_checksum
+
+    # Load image from file if pull failed
+    - name: "Import container image {{ container_name }} to podman"
+      ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
+      register: import_result
+
+    # Cleanup image file
+    - name: Cleanup container image file
+      ansible.builtin.file:
+        path: "/tmp/{{ container_name }}.tar"
+        state: absent
+
+# Get image info from podman
+- name: Gather info on container image
+  containers.podman.podman_image_info:
+  register: images_info
+
+# Find image id
+- name: Parse image info, select container image id
+  ansible.builtin.set_fact:
+    image_id: "{{ images_info.images | selectattr('RepoTags', 'search', container_name) | map(attribute='Id') | first }}"
+
+##################################
+# Create container               #
+##################################
+
+# Create podman container
+- name: "Create container {{ container_name }} with id {{ image_id }}..."
+  containers.podman.podman_container:
+    name: "{{ container_name }}"
+    image: "{{ image_id }}"
+    ports: "{{ container_ports | default([]) }}"
+    volumes: "{{ _container_volumes | default([]) }}"
+    command: "{{ container_command | default('') }}"
+    restart_policy: always
+    privileged: "{{ container_privileged | default(false) }}"
+    cap_add: "{{ container_cap_add | default([]) }}"
+    security_opt: "{{ container_security_opt | default([]) }}"
+    user: "{{ container_user | default('ansible') }}"
+    env: "{{ container_env }}"
+
+# Wait for Hashicorp Vault to start
+- name: Wait for Hashicorp Vault container to start...
+  ansible.builtin.wait_for:
+    host: localhost
+    port: "{{ container_ports[0].split(':')[0] }}"
+    delay: 5
+    timeout: 60
+
+# Auto-start container on system boot
+- name: "Generate systemd unit file for container {{ container_name}}"
+  containers.podman.podman_generate_systemd:
+    name: "{{ container_name }}"
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+
+# Reload systemd
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: yes
+    scope: system
+
+# Enable systemd service for container
+- name: "Enable systemd service for {{ container_name }} container"
+  ansible.builtin.service:
+    name: "container-{{ container_name }}.service"
+    enabled: yes

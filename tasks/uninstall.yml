@@ -22,3 +22,17 @@
     - /etc/containers/storage.conf
     - /etc/containers/storage.conf
     - /etc/containers
+
+# Delete user podman
+- name: Delete user/groups...
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - podman
+
+# Delete podman group
+- name: Delete podman group...
+  ansible.builtin.group:
+    name: podman
+    state: absent

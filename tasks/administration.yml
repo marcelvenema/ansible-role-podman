@@ -1,0 +1,66 @@
+---
+
+#########################################################
+## Podman Server module                                ##
+#########################################################
+
+# Validate global variables.
+- name: Validate variables for Podman server module...
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - vault_address
+    - vault_token
+
+#########################################################
+## Start Podman service                                ##
+#########################################################
+
+- name: Start Podman service...
+  when: action == "start"
+  block:
+
+    # Show information message
+    - name: This part is not (yet) implemented.
+      ansible.builtin.debug:
+      msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
+
+#########################################################
+## Stop Podman service                                 ##
+#########################################################
+
+- name: Stop Podman service...
+  when: action == "stop"
+  block:
+
+    # Show information message
+    - name: This part is not (yet) implemented.
+      ansible.builtin.debug:
+      msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
+
+#########################################################
+## Update Podman                                       ##
+#########################################################
+
+- name: Update Podman service...
+  when: action == "update"
+  block:
+
+    - name: Update Podman package...
+      ansible.builtin.package:
+        name: "podman"
+        state: latest
+
+

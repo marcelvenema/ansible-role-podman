@@ -37,25 +37,53 @@
   when: action == "configure"
 
 - name: Start update action...
-  ansible.builtin.include_tasks: containers.yml
+  ansible.builtin.include_tasks: administration.yml
   when: action == "update"
 
-# -------------------------------------------------------
-
 - name: Start start action...
-  ansible.builtin.include_tasks: containers.yml
+  ansible.builtin.include_tasks: administration.yml
   when: action == "start"
 
 - name: Start stop action...
-  ansible.builtin.include_tasks: containers.yml
+  ansible.builtin.include_tasks: administration.yml
   when: action == "stop"
 
 # -------------------------------------------------------
 
+- name: Start start_container action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "start_container"
+
+- name: Start stop_container action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "stop_container"
+
 - name: Start export_container action...
-  ansible.builtin.include_tasks: containers.yml
+  ansible.builtin.include_tasks: containers/administration.yml
   when: action == "export_container"
+
+- name: Start import_container action...
+  ansible.builtin.include_tasks: containers/import_container.yml
+  when: action == "import_container"
+
+# -------------------------------------------------------
 
 - name: Start export_image action...
   ansible.builtin.include_tasks: images.yml
   when: action == "export_image"
+
+# -------------------------------------------------------
+
+- name: Start create_volumes action...
+  ansible.builtin.include_tasks: containers/volumes.yml
+  when: action == "create_volumes"
+
+- name: Start destroy_volumes action...
+  ansible.builtin.include_tasks: containers/volumes.yml
+  when: action == "destroy_volumes"
+
+- name: Start copy_to_volume action...
+  ansible.builtin.include_tasks: containers/volumes.yml
+  when: action == "copy_to_volume"
+
+# -------------------------------------------------------

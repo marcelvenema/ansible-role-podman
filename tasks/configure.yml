@@ -1,19 +1,6 @@
 ---
 
 #########################################################
-## Configuration                                       ##
-#########################################################
-
-# Create data folder /data to store container data
-- name: "Create data folder {{ podman_data_folder }}..."
-  ansible.builtin.file:
-    path: "{{ podman_data_folder }}"
-    state: directory
-    owner: ansible
-    group: ansible
-    mode: 0755
-
-#########################################################
 ## Create podman user/group                            ##
 #########################################################
 
@@ -52,4 +39,17 @@
     path: "/home/podman/.config/systemd/user/"
     state: directory
     owner: podman
+    mode: 0755
+
+#########################################################
+## Configuration                                       ##
+#########################################################
+
+# Create data folder /data to store container data
+- name: "Create data folder {{ podman_data_folder }}..."
+  ansible.builtin.file:
+    path: "{{ podman_data_folder }}"
+    state: directory
+    owner: podman
+    group: podman
     mode: 0755
