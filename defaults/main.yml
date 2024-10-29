@@ -2,3 +2,4 @@
 # 
 podman_data_folder: "/data"
 podman_service_user: "podman"
+podman_service_group: "podman-group"

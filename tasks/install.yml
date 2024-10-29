@@ -57,8 +57,7 @@
     state: present
   when: ansible_os_family == "RedHat"
 
-# install Podman on server  
-# TODO error check/test    
+# Install Podman on server  
 - name: Install Podman on Ubuntu platform...
   ansible.builtin.apt:
     name: podman

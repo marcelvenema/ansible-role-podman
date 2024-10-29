@@ -7,19 +7,20 @@
 # Create podman user group
 - name: Create Podman user group...
   ansible.builtin.group: 
-    name: "{{ podman_service_user }}"
+    name: "{{ podman_service_group }}"
   become: true
 
 # Create podman user
 - name: Create Podman user...
   ansible.builtin.user:
     name: "{{ podman_service_user }}"
-    group: "{{ podman_service_user }}"
+    group: "{{ podman_service_group }}"
     system: true
     shell: "/bin/bash"
     comment: "service-user for Podman"
     createhome: "yes"
     state: present
+  become: true
 
 # Enable linger for user
 - name: Enable linger for Podman user...
@@ -51,5 +52,5 @@
     path: "{{ podman_data_folder }}"
     state: directory
     owner: "{{ podman_service_user }}"
-    group: "{{ podman_service_user }}"
+    group: "{{ podman_service_group }}"
     mode: 0755
