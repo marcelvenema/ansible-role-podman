@@ -1,3 +1,4 @@
 ---
 # 
 podman_data_folder: "/data"
+podman_service_user: "podman"

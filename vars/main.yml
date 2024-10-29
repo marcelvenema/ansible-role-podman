@@ -44,6 +44,10 @@ actions:
       description: "Update van Podman naar laatste versie."
       icon: "media/icon_podman.png"
 
+  - get_variables:
+      description: "Toon variabelen van Podman."
+      icon: "media/icon_podman.png"
+
 # -------------------------------------------------------
 
   - start_container:
