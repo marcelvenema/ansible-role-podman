@@ -155,7 +155,7 @@
   when: container_privileged is not defined or container_privileged is none or container_privileged == ""
 
 # Create podman container without security options
-- name: "Create container {{ container_name }} with id {{ image_id }}..."
+- name: "Create container {{ container_name }} (no security_opt) with id {{ image_id }}..."
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
@@ -170,7 +170,7 @@
   when: container_security_opt is not defined or container_security_opt is none
 
 # Create podman container with security options
-- name: "Create container {{ container_name }} with id {{ image_id }}..."
+- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
