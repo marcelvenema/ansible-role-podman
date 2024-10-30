@@ -148,6 +148,14 @@
 # Create container               #
 ##################################
 
+# Debug variable
+- name: Debug variable before setting
+  ansible.builtin.debug:
+    msg:
+      - " {{ container_privileged }}"
+      - " {{ container_security_opt}}"
+  ignore_errors: true
+
 # Set variable
 - name: Register variable (container_priviledged)
   ansible.builtin.set_fact:
@@ -161,11 +169,12 @@
   when: container_security_opt is not defined or container_security_opt == ""
 
 # Debug variable
-- name: Debug variable
+- name: Debug variable after setting
   ansible.builtin.debug:
-    var:
-      - container_privileged
-      - container_security_opt
+    msg:
+      - " {{ container_privileged }}"
+      - " {{ container_security_opt}}"
+  ignore_errors: true
 
 
 # Create podman container
@@ -177,7 +186,7 @@
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
     restart_policy: always
-    privileged: "{{ container_privileged | default(false) }}"
+    privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
     security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
