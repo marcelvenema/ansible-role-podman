@@ -160,6 +160,14 @@
     container_security_opt: null
   when: container_security_opt is not defined or container_security_opt == ""
 
+# Debug variable
+- name: Debug variable
+  ansible.builtin.debug:
+    var:
+      - container_privileged
+      - container_security_opt
+
+
 # Create podman container
 - name: "Create container {{ container_name }} with id {{ image_id }}..."
   containers.podman.podman_container:
