@@ -13,4 +13,5 @@
     variable_result: ""
   no_log: true
 
+# Get variables from podman role
 

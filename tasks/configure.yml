@@ -54,3 +54,8 @@
     owner: "{{ podman_service_user }}"
     group: "{{ podman_service_group }}"
     mode: 0755
+
+# Set fact for podman data folder
+- name: Register variable (podman_data_folder)...
+  ansible.builtin.set_fact:
+    podman_data_folder: "{{ podman_data_folder }}"

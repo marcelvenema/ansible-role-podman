@@ -50,6 +50,12 @@
 
 # -------------------------------------------------------
 
+- name: Start get_variables action...
+  ansible.builtin.include_tasks: get_variables.yml
+  when: action == "get_variables"
+
+# -------------------------------------------------------
+
 - name: Start start_container action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "start_container"
