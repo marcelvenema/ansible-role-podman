@@ -157,7 +157,7 @@
 # Set variable security_opt
 - name: Register variable (container_security_opt)
   ansible.builtin.set_fact:
-    container_security_opt: ""
+    container_security_opt: "{{ omit }}"
   when: container_security_opt is not defined or container_security_opt is none
 
 # Create podman container
