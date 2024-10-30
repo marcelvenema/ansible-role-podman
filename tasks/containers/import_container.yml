@@ -190,3 +190,30 @@
   ansible.builtin.service:
     name: "container-{{ container_name }}.service"
     enabled: yes
+
+#########################################################
+## Post-actions                                        ##
+#########################################################
+
+# Unset variables
+- name: Unset variables
+  ansible.builtin.set_fact:
+    container_repository_url: null
+    container_name: null
+    container_ports: null
+    container_volumes: null
+    container_env: null
+    container_command: null
+    container_user: null
+    container_security_opt: null
+    container_privileged: null
+    container_cap_add: null
+    container_repository_tag: null
+    container_repository_checksum: null
+    image_id: null
+    pull_result: null
+    import_result: null
+    images_info: null
+    container_tar_result: null
+    checksum_result: null
+    container_repository_url_result: null

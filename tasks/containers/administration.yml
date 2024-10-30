@@ -79,3 +79,7 @@
     # Stop playbook
     - name: Stop playbook
       ansible.builtin.meta: end_play
+
+#########################################################
+## Post-actions                                        ##
+#########################################################

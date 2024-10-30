@@ -59,3 +59,13 @@
 - name: Register variable (podman_data_folder)...
   ansible.builtin.set_fact:
     podman_data_folder: "{{ podman_data_folder }}"
+
+#########################################################
+## Post-configuration                                  ##
+#########################################################
+
+# Unset variables
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    podman_service_user: ""
+    podman_service_group: ""

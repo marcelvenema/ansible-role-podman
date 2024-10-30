@@ -52,5 +52,13 @@
       register: save_result
 
 #########################################################
-##                                                     ##
+## Post-actions                                        ##
 #########################################################
+
+# Unset variables
+- name: Unset variables...
+  set_fact:
+    podman_image_name: null
+    podman_repository_url: null
+    podman_repository_tag: null
+    podman_export_folder: null
