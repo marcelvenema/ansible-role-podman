@@ -62,3 +62,5 @@
     podman_repository_url: null
     podman_repository_tag: null
     podman_export_folder: null
+    pull_result: null
+    save_result: null
