@@ -148,6 +148,18 @@
 # Create container               #
 ##################################
 
+# Set variable
+- name: Register variable (container_priviledged)
+  ansible.builtin.set_fact:
+    container_priviledged: false
+  when: container_privileged is not defined or container_privileged == ""
+
+# Set variable security_opt
+- name: Register variable (container_security_opt)
+  ansible.builtin.set_fact:
+    container_security_opt: null
+  when: container_security_opt is not defined or container_security_opt == ""
+
 # Create podman container
 - name: "Create container {{ container_name }} with id {{ image_id }}..."
   containers.podman.podman_container:
@@ -157,9 +169,9 @@
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
     restart_policy: always
-    privileged: "{{ container_privileged | default(false) if container_privileged is not defined else container_privileged }}"
+    privileged: "{{ container_privileged | default(false) }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
-    security_opt: "{{ container_security_opt | default(omit) if container_security_opt is not defined else container_security_opt }}"
+    security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
     env: "{{ container_env | default(omit) }}"
 
