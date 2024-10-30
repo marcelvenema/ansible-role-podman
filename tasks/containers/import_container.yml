@@ -183,7 +183,7 @@
     security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
     env: "{{ container_env | default(omit) }}"
-  when: container_security_opt is defined
+  when: container_security_opt is defined or container_security_opt is not none
 
 # Wait for Hashicorp Vault to start
 - name: Wait for Hashicorp Vault container to start...
