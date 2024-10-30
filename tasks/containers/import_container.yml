@@ -154,13 +154,22 @@
     container_privileged: false
   when: container_privileged is not defined or container_privileged is none or container_privileged == ""
 
-# Set variable security_opt
-- name: Register variable (container_security_opt)
-  ansible.builtin.set_fact:
-    container_security_opt: "{{ omit }}"
+# Create podman container without security options
+- name: "Create container {{ container_name }} with id {{ image_id }}..."
+  containers.podman.podman_container:
+    name: "{{ container_name }}"
+    image: "{{ image_id }}"
+    ports: "{{ container_ports | default(omit) }}"
+    volumes: "{{ _container_volumes | default(omit) }}"
+    command: "{{ container_command | default(omit) }}"
+    restart_policy: always
+    privileged: "{{ container_privileged | default(false) | bool }}"
+    cap_add: "{{ container_cap_add | default(omit) }}"
+    user: "{{ container_user | default(omit) }}"
+    env: "{{ container_env | default(omit) }}"
   when: container_security_opt is not defined or container_security_opt is none
 
-# Create podman container
+# Create podman container with security options
 - name: "Create container {{ container_name }} with id {{ image_id }}..."
   containers.podman.podman_container:
     name: "{{ container_name }}"
@@ -174,6 +183,7 @@
     security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
     env: "{{ container_env | default(omit) }}"
+  when: container_security_opt is defined
 
 # Wait for Hashicorp Vault to start
 - name: Wait for Hashicorp Vault container to start...
