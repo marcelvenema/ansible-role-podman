@@ -160,13 +160,13 @@
 - name: Register variable (container_priviledged)
   ansible.builtin.set_fact:
     container_priviledged: false
-  when: container_privileged is not defined or container_privileged == " " or container_privileged == ""
+  when: container_privileged is not defined or container_privileged is none or container_privileged == ""
 
 # Set variable security_opt
 - name: Register variable (container_security_opt)
   ansible.builtin.set_fact:
     container_security_opt: null
-  when: container_security_opt is not defined or container_security_opt == ""
+  when: container_security_opt is not defined or container_security_opt is none or container_security_opt == ""
 
 # Debug variable
 - name: Debug variable after setting
