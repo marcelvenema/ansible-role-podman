@@ -157,9 +157,9 @@
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
     restart_policy: always
-    privileged: "{{ container_privileged | default(false) }}"
+    privileged: "{{ container_privileged | default(false) if container_privileged is not defined else container_privileged }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
-    security_opt: "{{ container_security_opt | default(omit) }}"
+    security_opt: "{{ container_security_opt | default(omit) if container_security_opt is not defined else container_security_opt }}"
     user: "{{ container_user | default(omit) }}"
     env: "{{ container_env | default(omit) }}"
 
