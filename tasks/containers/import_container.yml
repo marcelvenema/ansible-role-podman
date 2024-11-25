@@ -67,7 +67,7 @@
       register: container_repository_url_result
       delegate_to: localhost
 
-   # Copy image file to destination if local file
+    # Copy image file to destination if local file
     - name: Copy container image file to destination
       ansible.builtin.copy:
         src: "{{ container_repository_url }}"
@@ -76,11 +76,11 @@
         - container_repository_url_result.stat.exists == true
 
     # Download local file if http or https
-        - name: "Download file from {{ container_repository_url }}"
-          ansible.builtin.get_url:
-            url: container_repository_url
-            dest: "/tmp/{{ container_name }}.tar"
-          when: ("http" in container_repository_url) or ("ftp" in container_repository_url) # https is included
+    - name: "Download file from {{ container_repository_url }}"
+      ansible.builtin.get_url:
+        url: "{{ container_repository_url }}"
+        dest: "/tmp/{{ container_name }}.tar"
+      when: ("http" in container_repository_url) or ("ftp" in container_repository_url) # https is included
         
     # check if container file exists
     - name: "Check if /tmp/{{ container_name }}.tar exists..."
