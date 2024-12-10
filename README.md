@@ -3,26 +3,26 @@
 <table border="0">
   <tr>
     <td width="160px" valign="top"><img src="media/icon_podman.png" align="left" height="128" width="128" /></td>
-    <td>Ansible role voor installatie en configuratie van RedHat Podman<br/>
+    <td>Ansible role to install, configure and administer RedHat Podman.<br/>
         <br/>
-        Website van leverancier: `https://podman.io`<br/>
+        Supplier website: `https://podman.io`<br/>
         <br/>
     </td>
   </tr>
 </table>
 
-# Diensten:
+# Services:
 
 ## Deployment
-Acties voor deployment.<br/>
+Deployment actions:<br/>
 
 action: **install**<br/>
-Installatie van laatste versie van RedHat Podman. Basis configuratie.<br/>
+Install basic version of RedHat Podman. Basic configuration.<br/>
 variables:<br/>
-<kbd>uninstall</kbd> (optioneel) : true/false, de-installatie voordat installatie plaatsvindt.<br/>
-<kbd>podman_data_folder</kbd> (optioneel) : Lokale folder voor opslag Podman data, standaard `/data`.<br/>
+<kbd>uninstall</kbd> (optional) : true/false, uninstallation of Podman before installation.<br/>
+<kbd>podman_data_folder</kbd> (optional) : Local folder for storing Podman data, default `/data`.<br/>
 
-Voorbeeld:
+Example:
 ```
 - name: Install and configure Podman
   hosts: localhost
@@ -35,55 +35,52 @@ Voorbeeld:
 <br/>
 
 action: **uninstall**<br/>
-De-installatie van RedHat Podman.<br/>
+Uninstallation of RedHat Podman.<br/>
 variables:<br/>
-<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
-
-Voorbeeld:
-```
-- name: Uninstall Podman
-  hosts: localhost
-  become: true
-  roles:
-   - role: podman
-     vars:
-       action : uninstall
-```
+<kbd>(none)</kbd> : No variables needed.<br/>
 <br/>
 
 action: **update**<br/>
-Update van RedHat Podman.<br/>
+Update of RedHat Podman.<br/>
 variables:<br/>
-<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
 <br/>
 
-Voorbeeld:
-```
-- name: Update Podman
-  hosts: localhost
-  roles:
-   - role: podman
-     vars:
-       action : update
-```
+## Configuration
+Configuration actions:<br/>
+
+action: **configure**<br/>
+Configure RedHat Podman.<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
 <br/>
 
-## Configuratie
-Acties voor configuratie.<br/>
+## Management
+Management actions:<br/>
 
-**Geen actions gedefinieerd.**
+action: **start**<br/>
+Start RedHat Podman service.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
 
-## Beheer
-Acties voor beheer.<br/>
+action: **stop**<br/>
+Start RedHat Podman service.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
+
+
+
+
 
 action: **export_image**<br/>
-Export Podman image naar tarball.<br/>
+Export Podman image to tarball.<br/>
 variables:<br/>
-<kbd>podman_repository_url</kbd> : URL met locatie van container repository.<br/>
-<kbd>podman_repository_tag</kbd> (optioneel) : release of versienummer van het container image. standaard is 'latest'.<br/>
-<kbd>podman_export_folder</kbd> Folder voor export images, bijvoorbeeld '/tmp/'.<br/>
+<kbd>podman_repository_url</kbd> : URL with location of container repository.<br/>
+<kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br/>
+<kbd>podman_export_folder</kbd> Folder for export images, for example '/tmp/'.<br/>
 
-Voorbeeld:
+Example:
 ```
 - name: Export Podman image
   hosts: localhost
@@ -96,11 +93,11 @@ Voorbeeld:
 ```
 
 action: **start**<br/>
-Start container. (IN ONTWIKKELING)<br/>
+Start container. (IN DEVELOPMENT)<br/>
 variables:<br/>
-<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
 
-Voorbeeld:
+Example:
 ```
 - name: Export Podman image
   hosts: localhost
@@ -111,11 +108,11 @@ Voorbeeld:
 ```
 
 action: **stop**<br/>
-Stop container. (IN ONTWIKKELING)<br/>
+Stop container. (IN DEVELOPMENT)<br/>
 variables:<br/>
-<kbd>(geen)</kbd> : Geen variablen benodigd.<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
 
-Voorbeeld:
+Example:
 ```
 - name: Export Podman image
   hosts: localhost
@@ -129,32 +126,32 @@ Voorbeeld:
 ***
 
 - **changelog**<br/>
-  Wijzigingen logboek.<br/>
-  Zie [changelog](CHANGELOG.md)<br/>
+  Change log.<br/>
+  See [changelog](CHANGELOG.md)<br/>
 
 
 
 - **roadmap**<br/>
-  Visie en toekomstige ontwikkelingen.<br/>
-  Zie [roadmap](ROADMAP.md)<br/>
+  Vision and future developments.<br/>
+  See [roadmap](ROADMAP.md)<br/>
 
 ***
 
-## Voorbereidingen
-(geen).<br/>
+## Preparations
+(none).<br/>
 
 
-## Afhankelijkheden
-Afhankelijkheden zijn benoemd in het **requirements.yml** bestand. Gebruik `ansible-galaxy install -r requirements.yml --force` voor installatie.<br/>
+## Dependencies
+Dependencies are listed in the **requirements.yml** file. Use `ansible-galaxy install -r requirements.yml --force` for installation.<br/>
 
-Indien deze role in andere playbooks of Ansible projecten wordt gebruikt, dient de URL van deze rol te worden toegevoegd aan het `requirements.yml` bestand. Via bovenstaand command wordt de rol dan in de juiste folderstructuur geplaatst.<br/>
+If this role is used in other playbooks or Ansible projects, the URL of this role should be added to the `requirements.yml` file. Using the above command, the role will be placed in the correct folder structure.<br/>
 <br/>
 
 
-## Installatie en configuratie
-Installatie via de action variabele <kbd>install</kbd>. (Her-)configuratie via de action variabele <kbd>configure</kbd>.<br/>
+## Installation and configuration
+Installation via the action variable <kbd>install</kbd>. (Re-)configuration via the action variable <kbd>configure</kbd>.<br/>
 
-Bij gebruik van deze rol in andere playbooks of Ansible projecten:<br/>
+When using this role in other playbooks or Ansible projects:<br/>
 ```
 - name: Install and configure Podman
   hosts: localhost
@@ -166,7 +163,7 @@ Bij gebruik van deze rol in andere playbooks of Ansible projecten:<br/>
 ```
 <br/>
 
-Bij gebruik als stand-alone Ansible project:<br/>
+When used as a stand-alone Ansible project:<br/>
 ```
 - name: Install and configure Podman
   hosts: localhost
@@ -179,13 +176,12 @@ Bij gebruik als stand-alone Ansible project:<br/>
 <br/>
 
 
-## Overige informatie
-(geen).<br/>
+## Other information
+(none).<br/>
 
-
-## Licentie
+## License
 MIT
 
 
-## Auteur
+## Author
 Marcel Venema

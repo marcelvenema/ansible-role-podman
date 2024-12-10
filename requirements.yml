@@ -1,9 +1,3 @@
 
-#collections:
-#  - name: ansible.posix
-
-#roles:
-#  - name: vault
-#    src: ssh://git@github.com/marcelvenema/ansible-role-vault.git
-#    version: main
-#    scm: git
+collections:
+  - name: ansible.posix
