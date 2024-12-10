@@ -11,110 +11,25 @@
   </tr>
 </table>
 
-# Services:
-
-## Deployment
-Deployment actions:<br/>
-
-### Podman
-
-action: **install**<br/>
-Install basic version of RedHat Podman. Basic configuration.<br/>
-variables:<br/>
-<kbd>uninstall</kbd> (optional) : true/false, uninstallation of Podman before installation.<br/>
-<kbd>podman_data_folder</kbd> (optional) : Local folder for storing Podman data, default `/data`.<br/>
-
-Example:
-```
-- name: Install and configure Podman
-  hosts: localhost
-  roles:
-   - role: podman
-     vars:
-       action : install
-       uninstall : true
-```
-
-action: **uninstall**<br/>
-Uninstallation of RedHat Podman.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-
-action: **update**<br/>
-Update of RedHat Podman.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-
-
-### Containers:
-
-action: **update_container**<br/>
-Start Podman container.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-
-
-action: **import_container**<br/>
-Start Podman container.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-
-
-### Volumes:
-
-
-
-## Configuration
-Configuration actions:<br/>
+# Actions:
 
 action: **configure**<br/>
 Configure RedHat Podman.<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
-
-## Management
-Management actions:<br/>
-
-action: **start**<br/>
-Start RedHat Podman service.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
-
-action: **stop**<br/>
-Start RedHat Podman service.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
-
-
-action: **start_container**<br/>
-Start Podman container.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
-
-action: **stop_container**<br/>
-Start Podman container.<br/>
-variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
 <br/>
 
 action: **export_container**<br/>
-Start Podman container.<br/>
+Export Podman container. `NOT (YET) IMPLEMENTED`<br/>
 variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
 <br/>
-
-
-
 
 action: **export_image**<br/>
 Export Podman image to tarball.<br/>
 variables:<br/>
 <kbd>podman_repository_url</kbd> : URL with location of container repository.<br/>
 <kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br/>
-<kbd>podman_export_folder</kbd> Folder for export images, for example '/tmp/'.<br/>
+<kbd>podman_export_folder</kbd> Folder to export images, for example '/tmp/'.<br/>
 
 Example:
 ```
@@ -128,35 +43,71 @@ Example:
        podman_export_folder: /data/export
 ```
 
-action: **start**<br/>
-Start container. (IN DEVELOPMENT)<br/>
+action: **import_container**<br/>
+Start Podman container.<br/>
 variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+<kbd>container_repository_url</kbd> : URL with location of container repository.<br/>
+<kbd>container_name</kbd> : <br/>
+<kbd>container_ports</kbd> : <br/>
+<kbd>container_volumes</kbd> : <br/>
+<kbd>container_env</kbd> : <br/>
+
+action: **install**<br/>
+Install basic version of RedHat Podman. Basic configuration.<br/>
+variables:<br/>
+<kbd>uninstall</kbd> (optional) : true/false, uninstall Podman before installation.<br/>
+<kbd>podman_data_folder</kbd> (optional) : Local folder to store Podman data, default `/data`.<br/>
 
 Example:
 ```
-- name: Export Podman image
+- name: Install and configure Podman
   hosts: localhost
   roles:
    - role: podman
      vars:
-       action : start
+       action : install
+       uninstall : true
 ```
+
+action: **start**<br/>
+Start RedHat Podman service. `NOT (YET) IMPLEMENTED`<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+<br/>
+
+action: **start_container**<br/>
+Start Podman container. `NOT (YET) IMPLEMENTED`<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+<br/>
 
 action: **stop**<br/>
-Stop container. (IN DEVELOPMENT)<br/>
+Stop RedHat Podman service. `NOT (YET) IMPLEMENTED`<br/>
 variables:<br/>
-<kbd>(none)</kbd> : No variables needed.<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+<br/>
 
-Example:
-```
-- name: Export Podman image
-  hosts: localhost
-  roles:
-   - role: podman
-     vars:
-       action : stop
-```
+action: **stop_container**<br/>
+Stop Podman container. `NOT (YET) IMPLEMENTED`<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+<br/>
+
+action: **uninstall**<br/>
+Uninstallation of RedHat Podman.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+
+action: **update**<br/>
+Update of RedHat Podman to latest version.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
+
+action: **update_container**<br/>
+Update-upgrade Podman container. `NOT (YET) IMPLEMENTED`<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br/>
 
 
 ***
@@ -164,8 +115,6 @@ Example:
 - **changelog**<br/>
   Change log.<br/>
   See [changelog](CHANGELOG.md)<br/>
-
-
 
 - **roadmap**<br/>
   Vision and future developments.<br/>
@@ -183,9 +132,8 @@ Dependencies are listed in the **requirements.yml** file. Use `ansible-galaxy in
 If this role is used in other playbooks or Ansible projects, the URL of this role should be added to the `requirements.yml` file. Using the above command, the role will be placed in the correct folder structure.<br/>
 <br/>
 
-
 ## Installation and configuration
-Installation via the action variable <kbd>install</kbd>. (Re-)configuration via the action variable <kbd>configure</kbd>.<br/>
+Installation via the action variable <kbd>install</kbd>. Configuration via the action variable <kbd>configure</kbd>.<br/>
 
 When using this role in other playbooks or Ansible projects:<br/>
 ```
