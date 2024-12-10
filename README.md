@@ -16,6 +16,8 @@
 ## Deployment
 Deployment actions:<br/>
 
+### Podman
+
 action: **install**<br/>
 Install basic version of RedHat Podman. Basic configuration.<br/>
 variables:<br/>
@@ -32,19 +34,17 @@ Example:
        action : install
        uninstall : true
 ```
-<br/>
 
 action: **uninstall**<br/>
 Uninstallation of RedHat Podman.<br/>
 variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
 
 action: **update**<br/>
 Update of RedHat Podman.<br/>
 variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
+
 
 ### Containers:
 
@@ -52,13 +52,12 @@ action: **update_container**<br/>
 Start Podman container.<br/>
 variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
+
 
 action: **import_container**<br/>
 Start Podman container.<br/>
 variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
-<br/>
 
 
 ### Volumes:
