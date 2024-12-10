@@ -46,6 +46,25 @@ variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
 <br/>
 
+### Containers:
+
+action: **update_container**<br/>
+Start Podman container.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
+
+action: **import_container**<br/>
+Start Podman container.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
+
+
+### Volumes:
+
+
+
 ## Configuration
 Configuration actions:<br/>
 
@@ -69,6 +88,24 @@ variables:<br/>
 <kbd>(none)</kbd> : No variables needed.<br/>
 <br/>
 
+
+action: **start_container**<br/>
+Start Podman container.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
+
+action: **stop_container**<br/>
+Start Podman container.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
+
+action: **export_container**<br/>
+Start Podman container.<br/>
+variables:<br/>
+<kbd>(none)</kbd> : No variables needed.<br/>
+<br/>
 
 
 

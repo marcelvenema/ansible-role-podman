@@ -64,6 +64,10 @@
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "stop_container"
 
+- name: Start update_container action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "update_container"
+
 - name: Start export_container action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "export_container"

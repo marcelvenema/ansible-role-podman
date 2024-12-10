@@ -58,10 +58,14 @@
   when: action == "update_container"
   block:
 
-    - name: Update Podman package...
-      ansible.builtin.package:
-        name: "podman"
-        state: latest
+    # Show information message
+    - name: This part is not (yet) implemented.
+      ansible.builtin.debug:
+      msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
 
 #########################################################
 ## Export container                                    ##
