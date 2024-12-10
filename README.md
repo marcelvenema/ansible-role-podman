@@ -18,6 +18,23 @@ Configure RedHat Podman.<br/>
 <kbd>(none)</kbd> : No variables defined.<br/>
 <br/>
 
+action: **copy_to_volume**<br/>
+Copy data to container volume.<br/>
+<kbd>volume_src</kbd> : No variables defined.<br/>
+<kbd>volume_dest</kbd> : No variables defined.<br/>
+<kbd>volume_owner</kbd> : No variables defined.<br/>
+<br/>
+
+action: **create_volumes**<br/>
+Create container volume.<br/>
+<kbd>container_volumes</kbd> : No variables defined.<br/>
+<br/>
+
+action: **destroy_volumes**<br/>
+Create container volume.<br/>
+<kbd>container_volumes</kbd> : No variables defined.<br/>
+<br/>
+
 action: **export_container**<br/>
 Export Podman container. `NOT (YET) IMPLEMENTED`<br/>
 variables:<br/>

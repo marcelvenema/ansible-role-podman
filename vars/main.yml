@@ -72,8 +72,6 @@ actions:
       description: "Exporteer image naar tarball."
       icon: "media/icon_podman.png"
 
-
-
 # -------------------------------------------------------
 
   - create_volumes:
@@ -99,7 +97,7 @@ actions:
             required: true
 
   - copy_to_volume:
-      description: "Kopieer bestanden naar volume."
+      description: "Copy files to volume."
       icon: "media/icon_podman.png"
 
 # -------------------------------------------------------
