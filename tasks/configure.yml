@@ -5,13 +5,13 @@
 #########################################################
 
 # Create podman user group
-- name: Create Podman user group...
+- name: Create Podman user group for managing Podman containers
   ansible.builtin.group: 
     name: "{{ podman_service_group }}"
   become: true
 
 # Create podman user
-- name: Create Podman user...
+- name: Create Podman service user
   ansible.builtin.user:
     name: "{{ podman_service_user }}"
     group: "{{ podman_service_group }}"
@@ -23,11 +23,11 @@
   become: true
 
 # Enable linger for user
-- name: Enable linger for Podman user...
+- name: Enable linger for Podman user to allow background services...
   ansible.builtin.command: "loginctl enable-linger {{ podman_service_user }}"
 
 # Create folder for ansible tmp files
-- name: Create home folders for Podman user...
+- name: Create temporary folders for Podman user in home directory
   ansible.builtin.file:
     path: /home/podman/.ansible/tmp
     state: directory
@@ -35,7 +35,7 @@
     mode: 0755
 
 # Create systemd folder for user
-- name: Create systemd folder for Podman user...
+- name: Create systemd configuration folder for Podman user
   ansible.builtin.file:
     path: "/home/podman/.config/systemd/user/"
     state: directory
@@ -47,7 +47,7 @@
 #########################################################
 
 # Create data folder /data to store container data
-- name: "Create data folder {{ podman_data_folder }}..."
+- name: "Create data folder {{ podman_data_folder }} for storing container data"
   ansible.builtin.file:
     path: "{{ podman_data_folder }}"
     state: directory
@@ -56,7 +56,7 @@
     mode: 0755
 
 # Set fact for podman data folder
-- name: Register variable (podman_data_folder)...
+- name: Register podman data folder variable (podman_data_folder)
   ansible.builtin.set_fact:
     podman_data_folder: "{{ podman_data_folder }}"
 
@@ -65,7 +65,7 @@
 #########################################################
 
 # Unset variables
-- name: Unset variables...
+- name: Unset Podman service user and group variables
   ansible.builtin.set_fact:
     podman_service_user: ""
     podman_service_group: ""

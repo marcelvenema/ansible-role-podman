@@ -1,2 +1,5 @@
+---
 
-# no collections required
+collections:
+  - name: containers.podman
+  
