@@ -68,36 +68,36 @@ actions:
 
 # -------------------------------------------------------
 
-    - export_image:
-            description: "Export image to tarball."
-            icon: "media/icon_podman.png"
+  - export_image:
+      description: "Export image to tarball."
+      icon: "media/icon_podman.png"
 
 # -------------------------------------------------------
 
-    - create_volumes:
-            description: "Create volume(s) for container storage."
-            icon: "media/icon_podman.png"
-            parameters:
-                - container_volumes:
-                        description: "Array of volumes and mappings."
-                        icon: "media/icon_podman.png"
-                        required: true
-                - volume_owner:
-                        description: "Owner of volume files."
-                        icon: "media/icon_podman.png"
-                        required: false
+  - create_volumes:
+      description: "Create volume(s) for container storage."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_volumes:
+          description: "Array of volumes and mappings."
+          icon: "media/icon_podman.png"
+          required: true
+        - volume_owner:
+          description: "Owner of volume files."
+          icon: "media/icon_podman.png"
+          required: false
 
-    - destroy_volumes:
-            description: "Remove volume(s) for container storage."
-            icon: "media/icon_podman.png"
-            parameters:
-                - container_volumes:
-                        description: "Array of volumes and mappings."
-                        icon: "media/icon_podman.png"
-                        required: true
+  - destroy_volumes:
+    description: "Remove volume(s) for container storage."
+    icon: "media/icon_podman.png"
+    parameters:
+      - container_volumes:
+        description: "Array of volumes and mappings."
+        icon: "media/icon_podman.png"
+        required: true
 
-    - copy_to_volume:
-            description: "Copy files to volume."
-            icon: "media/icon_podman.png"
+  - copy_to_volume:
+    description: "Copy files to volume."
+    icon: "media/icon_podman.png"
 
 # -------------------------------------------------------
