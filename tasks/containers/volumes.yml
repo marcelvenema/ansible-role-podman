@@ -24,6 +24,17 @@
   when: action == "create_volumes"
   block:
 
+    # Validate variables with loop
+    - name: Validate variables for copying files to container volume folders...
+      ansible.builtin.assert:
+        that: "varitem is defined"
+        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        quiet: true
+      loop_control:
+        loop_var: varitem
+      loop:
+        - container_volumes
+
     # Add podman_data_folder before each item in container_volumes
     - name: Gather volume folders...
       ansible.builtin.set_fact: 
@@ -31,12 +42,15 @@
 
     # Create folders from first part of container_volumes
     - name: Create data folders...
+      become: true
       ansible.builtin.file:
         path: "{{ item.split(':')[0] }}"
         state: directory
-        owner: "{{ volume_owner | default(ansible_user) }}"
-        mode: "0777"
+        owner: "{{ volume_owner | default(podman_service_user) }}"
+        group: "{{ volume_group | default(podman_service_group) }}"
+        mode: "{{ volume_mode | default('0644') }}"
       with_items: "{{ _container_volumes.split(',') }}"
+      when: container_volumes | length > 0
 
 #########################################################
 ## destroy_volumes                                     ##
@@ -68,13 +82,28 @@
   when: action == "copy_to_volume"
   block:
 
-    # Copy file
+    # Validate variables with loop
+    - name: Validate variables for copying files to container volume folders...
+      ansible.builtin.assert:
+        that: "varitem is defined"
+        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        quiet: true
+      loop_control:
+        loop_var: varitem
+      loop:
+        - volume_source_folder
+        - volume_destination_folder
+
+    # Copy folder
     - name: Copy files to container volume folders...
+      become: true
       ansible.builtin.copy:
-        remote_src: "{{ volume_src }}"
-        dest: "{{ podman_data_folder }}/{{ volume_dest }}"
-        owner: "{{ volume_owner }}"
-        mode: "0755"
+        src: "{{ volume_source_folder }}"
+        dest: "{{ podman_data_folder }}{{ volume_destination_folder }}"
+        remote_src: true
+        owner: "{{ volume_owner | default(podman_service_user) }}"
+        group: "{{ volume_group | default(podman_service_group) }}"
+        mode: "{{ volume_mode | default('0644') }}"
 
 #########################################################
 ## Post-actions                                        ##

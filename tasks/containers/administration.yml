@@ -1,7 +1,7 @@
 ---
 
 #########################################################
-## Podman Container module                             ##
+## Podman Container administration module              ##
 #########################################################
 
 # Validate global variables.
@@ -13,8 +13,46 @@
   loop_control:
     loop_var: varitem
   loop:
-    - vault_address
-    - vault_token
+    - container_name
+
+#########################################################
+## Run command                                         ##
+#########################################################
+
+- name: Start Podman container...
+  when: action == "run_container_command"
+  block:
+
+    # Validate required variables
+    - name: Validate required variables for action.
+      ansible.builtin.assert:
+        that: 'item is defined'
+        fail_msg: "Required variable '{{ item }}' has not been provided."
+        quiet: true
+      with_items:
+        - container_command
+        - container_command_output  
+
+    # Clear variable, be sure it is not used from a previous run.
+    - name: Clear variable...
+      ansible.builtin.set_fact:
+        container_command_output: ""
+      no_log: true
+
+    # Run command
+    - name: Run command in container...
+      become: true
+      become_user: "{{ podman_service_user }}"
+      ansible.builtin.command:
+        cmd: "{{ container_command }}"
+      #no_log: true
+      register: command_result
+
+    # Register output
+    - name: Register output...
+      ansible.builtin.set_fact:
+        container_command_output: "{{ command_result.stdout }}"
+      # no_log: true
 
 #########################################################
 ## Start container                                     ##
@@ -25,9 +63,9 @@
   block:
 
     # Show information message
-    - name: This part is not (yet) implemented.
+    - name: "This part is not (yet) implemented."
       ansible.builtin.debug:
-      msg: "This part is not (yet) implemented."
+        msg: "This part is not (yet) implemented."
 
     # Stop playbook
     - name: Stop playbook
@@ -42,9 +80,9 @@
   block:
 
     # Show information message
-    - name: This part is not (yet) implemented.
+    - name: "This part is not (yet) implemented."
       ansible.builtin.debug:
-      msg: "This part is not (yet) implemented."
+        msg: "This part is not (yet) implemented."
 
     # Stop playbook
     - name: Stop playbook
@@ -59,9 +97,9 @@
   block:
 
     # Show information message
-    - name: This part is not (yet) implemented.
+    - name: "This part is not (yet) implemented."
       ansible.builtin.debug:
-      msg: "This part is not (yet) implemented."
+        msg: "This part is not (yet) implemented."
 
     # Stop playbook
     - name: Stop playbook
@@ -76,9 +114,9 @@
   block:
 
     # Show information message
-    - name: This part is not (yet) implemented.
+    - name: "This part is not (yet) implemented."
       ansible.builtin.debug:
-      msg: "This part is not (yet) implemented."
+        msg: "This part is not (yet) implemented."
 
     # Stop playbook
     - name: Stop playbook

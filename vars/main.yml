@@ -66,6 +66,10 @@ actions:
       description: "Install container."
       icon: "media/icon_podman.png"
 
+  - run_container_command:
+      description: "Run command in container."
+      icon: "media/icon_podman.png"
+
 # -------------------------------------------------------
 
   - export_image:

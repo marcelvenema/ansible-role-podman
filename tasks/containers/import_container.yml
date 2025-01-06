@@ -15,9 +15,6 @@
   loop:
     - container_repository_url
     - container_name
-    - container_ports
-    - container_volumes
-    - container_env
 
 #########################################################
 ## Import container image                              ##
@@ -26,7 +23,7 @@
 # local file can be http, https, ftp or local file
 
 # If tag is not defined, set value to latest
-- name: Register variable (container_repoitory_tag)
+- name: Register variable (container_repository_tag)
   ansible.builtin.set_fact:
     container_repository_tag: "latest"
   when: container_repository_tag is not defined or container_repository_tag == ""
@@ -34,13 +31,15 @@
 # Show information
 - name: Show information
   ansible.builtin.debug:
-    msg: "Get container image from registry. this may take a while..."
+    msg: "Get container image from registry ({{ container_repository_url }}). this may take a while..."
 
 # Pull image from repository to local image repository. If failed, lookup local image file.
+# become is true to pull into system wide (root) storage
 - name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag }}"
-  containers.podman.podman_image:
-    name: "{{ container_repository_url }}"
-    tag: "{{ container_repository_tag }}"
+  become: true
+  become_user: "{{ podman_service_user }}"
+  ansible.builtin.command:
+    cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag }}"
   register: pull_result
   ignore_errors: true
 
@@ -124,7 +123,9 @@
         - checksum_result.stat.checksum != role_repository_checksum
 
     # Load image from file if pull failed
+    # become is true to pull into system wide (root) storage
     - name: "Import container image {{ container_name }} to podman"
+      become: true
       ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
       register: import_result
 
@@ -136,13 +137,25 @@
 
 # Get image info from podman
 - name: Gather info on container image
-  containers.podman.podman_image_info:
+  become: true
+  become_user: "{{ podman_service_user }}"
+  ansible.builtin.command:
+    cmd: "podman image inspect {{ container_repository_url }}:{{ container_repository_tag }}"
   register: images_info
 
-# Find image id
+# Find image id, do not use json_query as it is not installed on all systems
 - name: Parse image info, select container image id
   ansible.builtin.set_fact:
-    image_id: "{{ images_info.images | selectattr('RepoTags', 'search', container_name) | map(attribute='Id') | first }}"
+    image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+
+##################################
+# Container volumes              #
+##################################
+
+# Add podman_data_folder before each item in container_volumes
+- name: Gather volume folders...
+  ansible.builtin.set_fact: 
+    _container_volumes: "{% for item in container_volumes %}{{ podman_data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 ##################################
 # Create container               #
@@ -162,6 +175,8 @@
 
 # Create podman container without security options
 - name: "Create container {{ container_name }} (no security_opt) with id {{ image_id }}..."
+  become: true
+  become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
@@ -171,12 +186,14 @@
     restart_policy: always
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
-    user: "{{ container_user | default(omit) }}"
+    user: "{{ container_user | default(podman_service_user) }}"
     env: "{{ container_env | default(omit) }}"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == "unset"
 
 # Create podman container with security options
 - name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
+  become: true
+  become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
@@ -191,33 +208,6 @@
     env: "{{ container_env | default(omit) }}"
   when: container_security_opt != "unset"
 
-# Wait for Hashicorp Vault to start
-- name: Wait for Hashicorp Vault container to start...
-  ansible.builtin.wait_for:
-    host: localhost
-    port: "{{ container_ports[0].split(':')[0] }}"
-    delay: 5
-    timeout: 60
-
-# Auto-start container on system boot
-- name: "Generate systemd unit file for container {{ container_name}}"
-  containers.podman.podman_generate_systemd:
-    name: "{{ container_name }}"
-    new: true
-    no_header: true
-    dest: /etc/systemd/system
-
-# Reload systemd
-- name: Reload systemd
-  ansible.builtin.systemd_service:
-    daemon_reload: yes
-    scope: system
-
-# Enable systemd service for container
-- name: "Enable systemd service for {{ container_name }} container"
-  ansible.builtin.service:
-    name: "container-{{ container_name }}.service"
-    enabled: yes
 
 #########################################################
 ## Post-actions                                        ##
@@ -230,6 +220,7 @@
     container_name: null
     container_ports: null
     container_volumes: null
+    _container_volumes: null
     container_env: null
     container_command: null
     container_user: null
@@ -245,4 +236,3 @@
     container_tar_result: null
     checksum_result: null
     container_repository_url_result: null
-

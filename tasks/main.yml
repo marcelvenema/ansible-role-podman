@@ -72,6 +72,10 @@
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "export_container"
 
+- name: Start run_container_command action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "run_container_command"
+
 - name: Start import_container action...
   ansible.builtin.include_tasks: containers/import_container.yml
   when: action == "import_container"

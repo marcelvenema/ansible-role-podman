@@ -36,29 +36,24 @@
 ## Pre-installation                                    ##
 #########################################################
 
-# Install Podman prerequisites
-- name: Install Podman prerequisites...
-  ansible.builtin.package:
-    name:
-      - yum-utils
-      - device-mapper-persistent-data
-      - lvm2
-    state: present
-  when: ansible_os_family == "RedHat"
-
 #########################################################
 ## Installation                                        ##
 #########################################################
 
 # Install Podman on server
 - name: Install Podman on RHEL platform...
+  become: true
   ansible.builtin.package:
-    name: podman
+    name:
+      - podman
+      - container-tools
+      - container-selinux
     state: present
   when: ansible_os_family == "RedHat"
 
 # Install Podman on server  
 - name: Install Podman on Ubuntu platform...
+  become: true
   ansible.builtin.apt:
     name: podman
     update_cache: yes
@@ -67,7 +62,8 @@
 
 # Start Podman on boot
 - name: Start Podman on server boot...
-  ansible.builtin.service:
+  become: true
+  ansible.builtin.systemd:
     name: podman
     enabled: yes
     state: started
