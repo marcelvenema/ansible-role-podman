@@ -186,7 +186,7 @@
     restart_policy: always
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
-    user: "{{ container_user | default(podman_service_user) }}"
+    user: "{{ container_user | default (omit) }}"
     env: "{{ container_env | default(omit) }}"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == "unset"
 
@@ -208,6 +208,27 @@
     env: "{{ container_env | default(omit) }}"
   when: container_security_opt != "unset"
 
+##################################
+# Auto-start                     #
+##################################
+
+# - name: Generate systemd unit file for container
+#   become: true
+#   become_user: "{{ podman_service_user }}"
+#   containers.podman.podman_generate_systemd:
+#     name: "{{ container_name }}"
+#     new: true
+#     no_header: true
+#     dest: ~/.config/systemd/user/
+
+# - name: Ensure container is started and enabled
+#   become: true
+#   become_user: "{{ podman_service_user }}"
+#   ansible.builtin.systemd:
+#     name: "container-{{ container_name }}"
+#     daemon_reload: true
+#     state: started
+#     enabled: true
 
 #########################################################
 ## Post-actions                                        ##
