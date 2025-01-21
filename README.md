@@ -1,9 +1,16 @@
 # role: RedHat Podman
 
-| ![Podman Icon](media/icon_podman.png) | Ansible role for installation, configuration, usage and management of RedHat Podman.<br>Red Hat Podman is an open-source container management tool designed for building, running, and managing containers and container images. It provides a lightweight and daemon-less alternative to Docker, focusing on simplicity, security, and compatibility<br>Official website: `https://podman.io`
-|---|---|
+# role: RedHat Cockpit
 
-[Design Ansible role Podman](docs/DESIGN.md)<br>
+<table style="border:0px; width:100%"><tr><td width=160px valign=top><img src="media/icon_podman.png" alt="Cockpit icon" width=128 height=128></td>
+<td>
+Ansible role for installation, configuration, usage and management of RedHat Podman.
+Red Hat Podman is an open-source container management tool designed for building, running, and managing containers and container images. It provides a lightweight and daemon-less alternative to Docker, focusing on simplicity, security, and compatibility<br><br>Official website: `https://podman.io`<br><br>
+</td>
+</tr></table>
+
+Ansible role Podman : [Design](docs/DESIGN.md)  |  [Examples](examples)  |  [Test](molecule)  |  [Issues]()  |<br>
+Latest version:
 
 # Actions:
 

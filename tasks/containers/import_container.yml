@@ -180,6 +180,7 @@
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
+    arch: "{{ container_arch | default(omit) }}"
     ports: "{{ container_ports | default(omit) }}"
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
@@ -197,6 +198,7 @@
   containers.podman.podman_container:
     name: "{{ container_name }}"
     image: "{{ image_id }}"
+    arch: "{{ container_arch | default(omit) }}"
     ports: "{{ container_ports | default(omit) }}"
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
