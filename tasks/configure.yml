@@ -26,11 +26,18 @@
     podman_service_user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
   when: podman_service_user_password is not defined
 
-# Check if user podman exists, then fail message
+# Check if user podman exists
 - name: Check if Podman service user exists
+  ansible.builtin.user:
+    name: "{{ podman_service_user }}"
+  check_mode: yes
+  register: user_check
+
+# Fail if user podman exists
+- name: Fail if Podman service user already exists
   ansible.builtin.fail:
-    msg: "Podman service user '{{ podman_service_user }}' already exists. Please remove the user or change the variable 'podman_service_user' in the playbook."
-  when: podman_service_user in ansible_facts.users
+      msg: "Podman service user '{{ podman_service_user }}' already exists. Please remove the user or change the variable 'podman_service_user' in the playbook."
+  when: user_check.exists is defined and user_check.exists
 
 # Create podman user with cmd
 - name: Create Podman service user
