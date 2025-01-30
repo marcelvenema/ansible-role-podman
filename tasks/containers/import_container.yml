@@ -71,7 +71,7 @@
       ansible.builtin.copy:
         src: "{{ container_repository_url }}"
         dest: "/tmp/{{ container_name }}.tar"
-      when: 
+      when:
         - container_repository_url_result.stat.exists == true
 
     # Download local file if http or https
@@ -80,7 +80,7 @@
         url: "{{ container_repository_url }}"
         dest: "/tmp/{{ container_name }}.tar"
       when: ("http" in container_repository_url) or ("ftp" in container_repository_url) # https is included
-        
+
     # check if container file exists
     - name: "Check if /tmp/{{ container_name }}.tar exists..."
       ansible.builtin.stat:
@@ -91,11 +91,11 @@
     - name: Fail if container image file not found
       ansible.builtin.fail:
         msg: "Repository URL {{ container_repository_url }} not found. Container image file location not found. Cannot continue..."
-      when: 
+      when:
         - container_tar_result.stat.exists == false
 
     ##################################
-    # Checksum image                 # 
+    # Checksum image                 #
     ##################################
 
     # If checksum contains :, split it in checksum and algorithm
@@ -112,13 +112,13 @@
         checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
         get_checksum: yes
       register: checksum_result
-      when : container_repository_checksum is defined 
+      when : container_repository_checksum is defined
 
     # Fail when checksum is not the same
     - name: Fail when checksum is not correct
       ansible.builtin.fail:
         msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
-      when: 
+      when:
         - container_repository_checksum is defined
         - checksum_result.stat.checksum != role_repository_checksum
 
@@ -126,27 +126,49 @@
     # become is true to pull into system wide (root) storage
     - name: "Import container image {{ container_name }} to podman"
       become: true
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
       register: import_result
 
-    # Cleanup image file
-    - name: Cleanup container image file
-      ansible.builtin.file:
-        path: "/tmp/{{ container_name }}.tar"
-        state: absent
+    # Set variable
+    - name: Register variable (image_name)
+      ansible.builtin.set_fact:
+        image_name: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | first }}"
+
+    # Get image info from podman
+    - name: Gather info on container image (file)
+      become: true
+      become_user: "{{ podman_service_user }}"
+      ansible.builtin.command:
+        cmd: "podman image inspect {{ image_name }}"
+      register: images_info
+
+    # Find image id, do not use json_query as it is not installed on all systems
+    - name: Find image id
+      ansible.builtin.set_fact:
+        image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+
+    # Debug message
+    - name: Debug message
+      ansible.builtin.debug:
+        msg: "Image {{ image_id }} loaded from file"
+
 
 # Get image info from podman
+# only if pull was successful
 - name: Gather info on container image
   become: true
   become_user: "{{ podman_service_user }}"
   ansible.builtin.command:
     cmd: "podman image inspect {{ container_repository_url }}:{{ container_repository_tag }}"
   register: images_info
+  when: pull_result is succeeded
 
 # Find image id, do not use json_query as it is not installed on all systems
-- name: Parse image info, select container image id
+- name: Find image id
   ansible.builtin.set_fact:
     image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+  when: pull_result is succeeded
 
 ##################################
 # Container volumes              #
@@ -154,7 +176,7 @@
 
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
-  ansible.builtin.set_fact: 
+  ansible.builtin.set_fact:
     _container_volumes: "{% for item in container_volumes %}{{ podman_data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 ##################################
