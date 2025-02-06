@@ -22,11 +22,6 @@
   when: action == "export_image"
   block:
 
-    # Debug message
-    - name: Information message
-      ansible.builtin.debug:
-        msg: "Export podman image {{ podman_image_name }} from repository {{ podman_repository_url }}:{{ podman_repository_tag }}..."
-
     # Ensure export folder is present
     - name: Assert podman_export_folder is present...
       ansible.builtin.file:
@@ -38,6 +33,11 @@
     - name: Register variable (podman_repository_tag)...
       set_fact:
         podman_repository_tag: "{{ podman_repository_tag | default('latest') }}"
+
+    # Show information message
+    - name: Information message
+      ansible.builtin.debug:
+        msg: "Export podman image {{ podman_image_name }} from repository {{ podman_repository_url }}:{{ podman_repository_tag }}. This may take a while..."
 
     # Pull image from repository
     - name: "Pull {{ podman_image_name }} image from repository {{ podman_repository_url}}:{{ podman_repository_tag }}..."
