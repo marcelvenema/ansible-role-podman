@@ -58,6 +58,10 @@ actions:
       description: "Stop container."
       icon: "media/icon_podman.png"
 
+  - restart_container:
+      description: "Restart container."
+      icon: "media/icon_podman.png"
+
   - export_container:
       description: "Export container to tarball."
       icon: "media/icon_podman.png"

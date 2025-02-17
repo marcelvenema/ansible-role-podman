@@ -31,7 +31,7 @@
         quiet: true
       with_items:
         - container_command
-        - container_command_output  
+        - container_command_output
 
     # Clear variable, be sure it is not used from a previous run.
     - name: Clear variable...
@@ -43,9 +43,11 @@
     - name: Run command in container...
       become: true
       become_user: "{{ podman_service_user }}"
-      ansible.builtin.command:
-        cmd: "{{ container_command }}"
-      #no_log: true
+      containers.podman.podman_container_exec:
+        name: "{{ container_name }}"
+        command: "{{ container_command }}"
+        detach: false
+        tty: false
       register: command_result
 
     # Register output
@@ -87,6 +89,23 @@
     # Stop playbook
     - name: Stop playbook
       ansible.builtin.meta: end_play
+
+#########################################################
+## Restart container                                   ##
+#########################################################
+
+- name: restart Podman container...
+  when: action == "restart_container"
+  block:
+  
+    # Restart container
+    - name: "Restart container ({{ container_name }})..."
+      become: true
+      become_user: "{{ podman_service_user }}"
+      ansible.builtin.command: "podman restart {{ container_name }}"
+      register: restart_result
+
+
 
 #########################################################
 ## Update container                                    ##
