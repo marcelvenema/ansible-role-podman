@@ -1,26 +1,19 @@
 ---
 
 #########################################################
-## Configuration                                       ##
+## Podman Configuration                                ##
 #########################################################
 
+#########################################################
+## Create podman user/group                            ##
+#########################################################
 # Enable user namespaces
 - name: Enable user namespaces for Podman
   become: true
   ansible.builtin.command:
     cmd: "sysctl user.max_user_namespaces=28633"
 
-#########################################################
-## Create podman user/group                            ##
-#########################################################
-
-# Create podman user group
-- name: Create Podman user group for managing Podman containers
-  become: true
-  ansible.builtin.group: 
-    name: "{{ podman_service_group }}"
-
-# Create password for podman user
+# Set password for podman user
 - name: Set variable (podman_service_user_password)...
   ansible.builtin.set_fact:
     podman_service_user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
@@ -28,62 +21,74 @@
 
 # Check if user podman exists
 - name: Check if Podman service user exists
-  ansible.builtin.user:
-    name: "{{ podman_service_user }}"
-  check_mode: yes
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ podman_service_user }}"
   register: user_check
+  failed_when: false # ignore when user does not exist
 
-# Fail if user podman exists
-- name: Fail if Podman service user already exists
-  ansible.builtin.fail:
-      msg: "Podman service user '{{ podman_service_user }}' already exists. Please remove the user or change the variable 'podman_service_user' in the playbook."
-  when: user_check.exists is defined and user_check.exists
+# Show information message
+- name: Show information message
+  ansible.builtin.debug:
+    msg: "Podman service user '{{ podman_service_user }}' already exists."
+  when: user_check.ansible_facts.getent_passwd is defined
 
-# Create podman user with cmd
-- name: Create Podman service user
-  become: true
-  ansible.builtin.command:
-    cmd: "useradd -m -s /bin/bash -p '{{ podman_service_user_password | password_hash('sha512') }}' -g '{{ podman_service_group }}' '{{ podman_service_user }}'"
+# Create user podman
+- name: Create Podman service user tasks
+  when: user_check.ansible_facts.getent_passwd is not defined
+  block: 
 
-# Create folder for ansible tmp files
-- name: Create temporary folders for Podman user in home directory
-  become: true
-  ansible.builtin.file:
-    path: /home/podman/.ansible/tmp
-    state: directory
-    owner: "{{ podman_service_user }}"
-    group: "{{ podman_service_group }}"
-    # mode: 0755
+    # Create podman user group
+    - name: Create Podman user group for managing Podman containers
+      become: true
+      ansible.builtin.group: 
+        name: "{{ podman_service_group }}"
 
-# Create systemd folder for user
-- name: Create systemd configuration folder for Podman user
-  become: true
-  ansible.builtin.file:
-    path: "/home/podman/.config/systemd/user/"
-    state: directory
-    owner: "{{ podman_service_user }}"
-    group: "{{ podman_service_group }}"
-    # mode: 0755
+    # Create user podman
+    - name: Create Podman service user
+      become: true
+      ansible.builtin.user:
+        name: "{{ podman_service_user }}"
+        password: "{{ podman_service_user_password | password_hash('sha512') }}"
+        group: "{{ podman_service_group }}"
+        shell: /bin/bash
+        state: present
 
-# Create containers folder for user
-- name: Create systemd configuration folder for Podman user
-  become: true
-  ansible.builtin.file:
-    path: "/home/podman/.config/containers/"
-    state: directory
-    owner: "{{ podman_service_user }}"
-    group: "{{ podman_service_group }}"
-    # mode: 0755
+    # Create folder for ansible tmp files
+    - name: Create temporary folders for Podman user in home directory
+      become: true
+      ansible.builtin.file:
+        path: /home/podman/.ansible/tmp
+        state: directory
+        owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
 
-# Enable linger for user
-- name: Enable linger for Podman user to allow background services...
-  become: true
-  ansible.builtin.command: "loginctl enable-linger {{ podman_service_user }}"
+    # Create systemd folder for user
+    - name: Create systemd configuration folder for Podman user
+      become: true
+      ansible.builtin.file:
+        path: "/home/podman/.config/systemd/user/"
+        state: directory
+        owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
+
+    # Create containers folder for user
+    - name: Create systemd configuration folder for Podman user
+      become: true
+      ansible.builtin.file:
+        path: "/home/podman/.config/containers/"
+        state: directory
+        owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
+
+    # Enable linger for user
+    - name: Enable linger for Podman user to allow background services...
+      become: true
+      ansible.builtin.command: "loginctl enable-linger {{ podman_service_user }}"
 
 #########################################################
 ## Data folder                                         ##
 #########################################################
-
 # Create data folder /data to store container data
 - name: "Create data folder {{ podman_data_folder }} for storing container data"
   become: true
@@ -92,7 +97,6 @@
     state: directory
     owner: "{{ podman_service_user }}"
     group: "{{ podman_service_group }}"
-    #mode: 0755
 
 # Set fact for podman data folder
 - name: Register podman data folder variable (podman_data_folder)
@@ -100,9 +104,18 @@
     podman_data_folder: "{{ podman_data_folder }}"
 
 #########################################################
+## Vault config                                        ##
+#########################################################
+# include tasks from configure_vault.yml
+- name: Configure Vault for RedHat Podman
+  ansible.builtin.include_tasks: configure_vault.yml
+  when:
+    - vault_address is defined
+    - vault_token is defined
+
+#########################################################
 ## Post-configuration                                  ##
 #########################################################
-
 # Unset variables
 - name: Unset Podman service user and group variables
   ansible.builtin.set_fact:

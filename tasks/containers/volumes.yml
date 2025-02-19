@@ -3,7 +3,6 @@
 #########################################################
 ## Podman Volumes module                               ##
 #########################################################
-
 # Validate global variables.
 - name: Validate variables for Podman Volumes module...
   ansible.builtin.assert:
@@ -18,7 +17,6 @@
 #########################################################
 ## create_volumes                                      ##
 #########################################################
-
 # Create volume folders
 - name: Create container volume folders...
   when: action == "create_volumes"
@@ -52,10 +50,15 @@
       with_items: "{{ _container_volumes.split(',') }}"
       when: container_volumes | length > 0
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## destroy_volumes                                     ##
 #########################################################
-
 # Destroy volume folders
 - name: Destroy container volume folders...
   when: action == "destroy_volumes"
@@ -73,10 +76,15 @@
         state: absent
       with_items: "{{ _container_volumes.split(',') }}"
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## copy_to_volume                                      ##
 #########################################################
-
 # Copy to volume folders
 - name: Copy files to container volume folders...
   when: action == "copy_to_volume"
@@ -105,6 +113,16 @@
         group: "{{ volume_group | default(podman_service_group) }}"
         mode: "{{ volume_mode | default('0644') }}"
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+# Unset variables
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    action_parameters: null

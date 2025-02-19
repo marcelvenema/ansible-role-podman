@@ -3,7 +3,6 @@
 #########################################################
 ## Podman Import Container module                      ##
 #########################################################
-
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
@@ -257,6 +256,11 @@
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined 
 
 # Unset variables
 - name: Unset variables

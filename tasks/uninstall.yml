@@ -3,7 +3,6 @@
 #########################################################
 ## Uninstall                                           ##
 #########################################################
-
 # Uninstall Podman
 - name: Uninstall Podman on RHEL platform...
   ansible.builtin.package:
@@ -25,6 +24,7 @@
 
 # Delete user podman
 - name: Delete user/groups...
+  become: true
   ansible.builtin.user:
     name: "{{ item }}"
     state: absent
@@ -33,6 +33,7 @@
 
 # Delete podman group
 - name: Delete podman group...
+  become: true
   ansible.builtin.group:
     name: podman
     state: absent

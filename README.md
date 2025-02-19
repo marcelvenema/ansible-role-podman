@@ -1,6 +1,4 @@
-# role: RedHat Podman
-
-# role: RedHat Cockpit
+# Ansible role: RedHat Podman
 
 <table style="border:0px; width:100%"><tr><td width=160px valign=top><img src="media/icon_podman.png" alt="Cockpit icon" width=128 height=128></td>
 <td>

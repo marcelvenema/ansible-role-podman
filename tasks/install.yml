@@ -1,9 +1,8 @@
 --- 
 
 #########################################################
-## Gather information                                  ##
+## Podman installation                                 ##
 #########################################################
-
 # Gather installed packages
 - name: Gather installed packages...
   ansible.builtin.package_facts:
@@ -21,9 +20,8 @@
   when: '"podman" not in ansible_facts.packages'
 
 #########################################################
-## Uninstall                                           ##
+## Uninstall before install                            ##
 #########################################################
-
 # Run uninstall if Podman is installed and uninstall is set
 - name: Run uninstall action if Podman is installed...
   ansible.builtin.include_tasks: uninstall.yml
@@ -37,12 +35,9 @@
 #########################################################
 
 
-
-
 #########################################################
 ## Installation                                        ##
 #########################################################
-
 # Install Podman on server
 - name: Install Podman on RHEL platform...
   become: true
@@ -74,7 +69,6 @@
 #########################################################
 ## Configuration                                       ##
 #########################################################
-
 # Configure Podman
 - name: Start configure task...
   ansible.builtin.include_tasks: configure.yml
@@ -84,6 +78,12 @@
 #########################################################
 ## Post-install                                        ##
 #########################################################
+
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined 
 
 # Unset variables
 - name: Unset variables...

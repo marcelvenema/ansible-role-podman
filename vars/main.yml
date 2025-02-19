@@ -40,48 +40,89 @@ actions:
             icon: "media/icon_podman.png"
             required: false
 
+  - configure_vault:
+      description: "Configure Hashicorp Vault secrets for Podman if Vault is present."
+      icon: "media/icon_podman.png"
+      parameters:
+        - vault_address:
+            description: "Vault address."
+            icon: "media/icon_podman.png"
+            required: true
+        - vault_token:
+            description: "Vault token."
+            icon: "media/icon_podman.png"
+            required: true
+
   - update:
       description: "Update Podman to the latest version."
       icon: "media/icon_podman.png"
 
-  - get_variables:
-      description: "Show Podman variables."
-      icon: "media/icon_podman.png"
-
 # -------------------------------------------------------
-
+# Podman containers
   - start_container:
       description: "Start container."
       icon: "media/icon_podman.png"
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
 
   - stop_container:
       description: "Stop container."
       icon: "media/icon_podman.png"
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
 
   - restart_container:
       description: "Restart container."
       icon: "media/icon_podman.png"
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
 
   - export_container:
       description: "Export container to tarball."
       icon: "media/icon_podman.png"
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
 
   - import_container:
       description: "Install container."
       icon: "media/icon_podman.png"
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
 
   - run_container_command:
       description: "Run command in container."
       icon: "media/icon_podman.png"
-
+      parameters:
+        - container_name:
+            description: "Name of the container."
+            icon: "media/icon_podman.png"
+            required: true
+        - container_command:
+            description: "Command to run in the container."
+            icon: "media/icon_podman.png"
+            required: true
 # -------------------------------------------------------
-
+# Podman Images
   - export_image:
       description: "Export image to tarball."
       icon: "media/icon_podman.png"
-
 # -------------------------------------------------------
-
+# Podman Volumes
   - create_volumes:
       description: "Create volume(s) for container storage."
       icon: "media/icon_podman.png"
@@ -107,5 +148,4 @@ actions:
   - copy_to_volume:
     description: "Copy files to volume."
     icon: "media/icon_podman.png"
-
 # -------------------------------------------------------

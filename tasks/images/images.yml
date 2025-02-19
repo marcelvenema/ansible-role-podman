@@ -2,7 +2,6 @@
 #########################################################
 ## Podman Images module                                ##
 #########################################################
-
 # Validate global variables.
 - name: Validate variables for Podman images module...
   ansible.builtin.assert:
@@ -17,7 +16,6 @@
 #########################################################
 ## Export image                                        ##
 #########################################################
-
 - name: Export Podman image...
   when: action == "export_image"
   block:
@@ -51,10 +49,15 @@
       ansible.builtin.shell: "podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ podman_repository_url }}:{{ podman_repository_tag }}"
       register: save_result
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Post-actions                                        ##
 #########################################################
-
 # Unset variables
 - name: Unset variables...
   set_fact:

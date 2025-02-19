@@ -1,7 +1,7 @@
 ---
 
 #########################################################
-## Main module for podman ansible role                 ##
+## Main module for Podman ansible role                 ##
 #########################################################
 
 # Show message
@@ -11,7 +11,7 @@
 
 # If action variable is not defined, gather status of the service and set action variable
 - name: Gather action variable status...
-  ansible.builtin.include_tasks: get_status.yml
+  ansible.builtin.include_tasks: set_action.yml
   when: action is not defined
 
 # Assert that action is in actions
@@ -22,8 +22,13 @@
     fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
     quiet: true
 
-# -------------------------------------------------------
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined 
 
+# -------------------------------------------------------
 - name: Start install action...
   ansible.builtin.include_tasks: install.yml
   when: action == "install"
@@ -47,15 +52,7 @@
 - name: Start stop action...
   ansible.builtin.include_tasks: administration.yml
   when: action == "stop"
-
 # -------------------------------------------------------
-
-- name: Start get_variables action...
-  ansible.builtin.include_tasks: get_variables.yml
-  when: action == "get_variables"
-
-# -------------------------------------------------------
-
 - name: Start start_container action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "start_container"
@@ -83,15 +80,11 @@
 - name: Start import_container action...
   ansible.builtin.include_tasks: containers/import_container.yml
   when: action == "import_container"
-
 # -------------------------------------------------------
-
 - name: Start export_image action...
-  ansible.builtin.include_tasks: images.yml
+  ansible.builtin.include_tasks: images/images.yml
   when: action == "export_image"
-
 # -------------------------------------------------------
-
 - name: Start create_volumes action...
   ansible.builtin.include_tasks: containers/volumes.yml
   when: action == "create_volumes"
@@ -103,5 +96,4 @@
 - name: Start copy_to_volume action...
   ansible.builtin.include_tasks: containers/volumes.yml
   when: action == "copy_to_volume"
-
 # -------------------------------------------------------

@@ -3,7 +3,6 @@
 #########################################################
 ## Podman Container administration module              ##
 #########################################################
-
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
@@ -16,9 +15,8 @@
     - container_name
 
 #########################################################
-## Run command                                         ##
+## Run command inside container                        ##
 #########################################################
-
 - name: Start Podman container...
   when: action == "run_container_command"
   block:
@@ -54,12 +52,12 @@
     - name: Register output...
       ansible.builtin.set_fact:
         container_command_output: "{{ command_result.stdout }}"
-      # no_log: true
+      no_log: true
 
 #########################################################
 ## Start container                                     ##
 #########################################################
-
+# Start container.
 - name: Start Podman container...
   when: action == "start_container"
   block:
@@ -73,10 +71,16 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Stop container                                      ##
 #########################################################
-
+# Stop container.
 - name: Stop Podman container...
   when: action == "stop_container"
   block:
@@ -90,10 +94,16 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Restart container                                   ##
 #########################################################
-
+# Restart container
 - name: restart Podman container...
   when: action == "restart_container"
   block:
@@ -105,12 +115,18 @@
       ansible.builtin.command: "podman restart {{ container_name }}"
       register: restart_result
 
+    # TODO: check result
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
 
 #########################################################
 ## Update container                                    ##
 #########################################################
-
+# Update container
 - name: Update Podman container...
   when: action == "update_container"
   block:
@@ -124,10 +140,16 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Export container                                    ##
 #########################################################
-
+# Export container
 - name: Export Podman container...
   when: action == "export_container"
   block:
@@ -141,6 +163,16 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
+    # TODO: Send message to Kafka bus
+    - name: Publish message to Kafka bus...
+      ansible.builtin.debug:
+        msg: "TODO: Publish message to Kafka bus..."
+      when: kafka_bootstrap_servers is defined 
+
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+# Unset variables
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    action_parameters: null

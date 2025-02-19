@@ -1,0 +1,18 @@
+#########################################################
+## Get Podman variables from Vault                ##
+#########################################################
+
+- name: Gather Podman variables...
+  block: 
+
+    # Validate variables
+    - name: Validate variables for Redhat Podman...
+      ansible.builtin.assert:
+        that: "{{ varitem }} is defined"
+        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        quiet: true
+      loop_control:
+        loop_var: varitem
+      loop:
+        - podman_secret_engine_name
+        - podman_vault_id
