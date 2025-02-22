@@ -45,7 +45,6 @@
         path: "{{ item.split(':')[0] }}"
         state: directory
         owner: "{{ volume_owner | default(podman_service_user) }}"
-        group: "{{ volume_group | default(podman_service_group) }}"
         mode: "{{ volume_mode | default('0644') }}"
       with_items: "{{ _container_volumes.split(',') }}"
       when: container_volumes | length > 0
@@ -110,7 +109,6 @@
         dest: "{{ podman_data_folder }}{{ volume_destination_folder }}"
         remote_src: true
         owner: "{{ volume_owner | default(podman_service_user) }}"
-        group: "{{ volume_group | default(podman_service_group) }}"
         mode: "{{ volume_mode | default('0644') }}"
 
     # TODO: Send message to Kafka bus

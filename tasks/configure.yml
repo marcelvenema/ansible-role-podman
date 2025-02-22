@@ -38,19 +38,12 @@
   when: user_check.ansible_facts.getent_passwd is not defined
   block: 
 
-    # Create podman user group
-    - name: Create Podman user group for managing Podman containers
-      become: true
-      ansible.builtin.group: 
-        name: "{{ podman_service_group }}"
-
     # Create user podman
     - name: Create Podman service user
       become: true
       ansible.builtin.user:
         name: "{{ podman_service_user }}"
         password: "{{ podman_service_user_password | password_hash('sha512') }}"
-        group: "{{ podman_service_group }}"
         shell: /bin/bash
         state: present
 
@@ -61,7 +54,6 @@
         path: /home/podman/.ansible/tmp
         state: directory
         owner: "{{ podman_service_user }}"
-        group: "{{ podman_service_group }}"
 
     # Create systemd folder for user
     - name: Create systemd configuration folder for Podman user
@@ -70,7 +62,6 @@
         path: "/home/podman/.config/systemd/user/"
         state: directory
         owner: "{{ podman_service_user }}"
-        group: "{{ podman_service_group }}"
 
     # Create containers folder for user
     - name: Create systemd configuration folder for Podman user
@@ -79,7 +70,6 @@
         path: "/home/podman/.config/containers/"
         state: directory
         owner: "{{ podman_service_user }}"
-        group: "{{ podman_service_group }}"
 
     # Enable linger for user
     - name: Enable linger for Podman user to allow background services...
@@ -96,7 +86,6 @@
     path: "{{ podman_data_folder }}"
     state: directory
     owner: "{{ podman_service_user }}"
-    group: "{{ podman_service_group }}"
 
 # Set fact for podman data folder
 - name: Register podman data folder variable (podman_data_folder)

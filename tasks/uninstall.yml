@@ -30,10 +30,3 @@
     state: absent
   with_items:
     - podman
-
-# Delete podman group
-- name: Delete podman group...
-  become: true
-  ansible.builtin.group:
-    name: podman
-    state: absent
