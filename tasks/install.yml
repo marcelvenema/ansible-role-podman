@@ -44,6 +44,7 @@
   ansible.builtin.package:
     name:
       - podman
+      - podman-compose
       - container-tools
       - container-selinux
     state: present

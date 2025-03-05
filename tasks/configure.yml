@@ -13,6 +13,13 @@
   ansible.builtin.command:
     cmd: "sysctl user.max_user_namespaces=28633"
 
+# Create user group
+- name: "Create Podman service group {{ podman_service_group }}..."
+  become: true
+  ansible.builtin.group:
+    name: "{{ podman_service_group }}"
+    state: present
+
 # Set password for podman user
 - name: Set variable (podman_service_user_password)...
   ansible.builtin.set_fact:
@@ -44,6 +51,7 @@
       ansible.builtin.user:
         name: "{{ podman_service_user }}"
         password: "{{ podman_service_user_password | password_hash('sha512') }}"
+        group: "{{ podman_service_group }}"
         shell: /bin/bash
         state: present
 
@@ -54,6 +62,7 @@
         path: /home/podman/.ansible/tmp
         state: directory
         owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
 
     # Create systemd folder for user
     - name: Create systemd configuration folder for Podman user
@@ -62,6 +71,7 @@
         path: "/home/podman/.config/systemd/user/"
         state: directory
         owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
 
     # Create containers folder for user
     - name: Create systemd configuration folder for Podman user
@@ -70,6 +80,7 @@
         path: "/home/podman/.config/containers/"
         state: directory
         owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
 
     # Enable linger for user
     - name: Enable linger for Podman user to allow background services...
@@ -86,6 +97,7 @@
     path: "{{ podman_data_folder }}"
     state: directory
     owner: "{{ podman_service_user }}"
+    group: "{{ podman_service_group }}"
 
 # Set fact for podman data folder
 - name: Register podman data folder variable (podman_data_folder)

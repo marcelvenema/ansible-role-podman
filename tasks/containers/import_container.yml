@@ -147,12 +147,6 @@
       ansible.builtin.set_fact:
         image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
 
-    # Debug message
-    - name: Debug message
-      ansible.builtin.debug:
-        msg: "Image {{ image_id }} loaded from file"
-
-
 # Get image info from podman
 # only if pull was successful
 - name: Gather info on container image
