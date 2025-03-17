@@ -87,6 +87,23 @@
       become: true
       ansible.builtin.command: "loginctl enable-linger {{ podman_service_user }}"
 
+    # Create .ssh folder
+    - name: Create .ssh folder for Podman user
+      become: true
+      ansible.builtin.file:
+        path: "/home/{{ podman_service_user }}/.ssh"
+        state: directory
+        owner: "{{ podman_service_user }}"
+        group: "{{ podman_service_group }}"
+        mode: "0700"
+
+    # Create SSH key for user podman
+    - name: Create SSH key for Podman user
+      become: true
+      become_user: "{{ podman_service_user }}"
+      community.crypto.openssh_keypair:
+        path: "/home/{{ podman_service_user }}/.ssh/id_rsa"
+ 
 #########################################################
 ## Data folder                                         ##
 #########################################################

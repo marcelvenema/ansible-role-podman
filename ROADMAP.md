@@ -13,3 +13,5 @@
 
 - Write code for `NOT (YET) IMPLEMENTED` actions.<br/>
 - Add logging to Kafka messagebus.<br/>
+- function get_podman_service_user to retrieve variables
+- correct install of passlib python module

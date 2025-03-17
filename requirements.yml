@@ -2,4 +2,6 @@
 
 collections:
   - name: containers.podman
+  - name: community.crypto
+  
   
