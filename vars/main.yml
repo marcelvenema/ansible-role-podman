@@ -121,6 +121,24 @@ actions:
   - export_image:
       description: "Export image to tarball."
       icon: "media/icon_podman.png"
+      parameters:
+        - podman_image_name:
+            description: "Name of the Podman image to export."
+            icon: "media/icon_podman.png"
+            required: true
+        - podman_export_folder:
+            description: "Folder to export the image to."
+            icon: "media/icon_podman.png"
+            required: true
+  
+  - import_image:
+      description: "Import image from tarball."
+      icon: "media/icon_podman.png"
+      parameters:
+        - podman_image_file:
+            description: "Path to the tarball containing the image."
+            icon: "media/icon_podman.png"
+            required: true
 # -------------------------------------------------------
 # Podman Volumes
   - create_volumes:

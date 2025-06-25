@@ -84,6 +84,11 @@
 - name: Start export_image action...
   ansible.builtin.include_tasks: images/images.yml
   when: action == "export_image"
+
+- name: Start import_image action...
+  ansible.builtin.include_tasks: images/images.yml
+  when: action == "import_image"
+
 # -------------------------------------------------------
 - name: Start create_volumes action...
   ansible.builtin.include_tasks: containers/volumes.yml

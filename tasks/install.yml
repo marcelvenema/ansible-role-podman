@@ -31,15 +31,14 @@
     - uninstall == true
 
 #########################################################
-## Pre-requisites                                      ##
+## Pre-installation                                    ##
 #########################################################
-# python passlib module should be installed on Ansible control node to create password hashes
 
 
 #########################################################
 ## Installation                                        ##
 #########################################################
-# Install Podman on server
+# Install Podman on RHEL
 - name: Install Podman on RHEL platform...
   become: true
   ansible.builtin.package:
@@ -50,11 +49,14 @@
     state: present
   when: ansible_os_family == "RedHat"
 
-# Install Podman on server  
+# Install Podman on Ubuntu
 - name: Install Podman on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: podman
+    name: 
+     - podman
+     - container-tools
+     - container-selinux
     update_cache: yes
     state: present
   when: ansible_pkg_mgr == 'apt'
@@ -84,7 +86,7 @@
 - name: Publish message to Kafka bus...
   ansible.builtin.debug:
     msg: "TODO: Publish message to Kafka bus..."
-  when: kafka_bootstrap_servers is defined 
+  when: kafka_bootstrap_servers is defined
 
 # Unset variables
 - name: Unset variables...
