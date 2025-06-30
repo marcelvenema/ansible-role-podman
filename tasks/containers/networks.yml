@@ -1,0 +1,29 @@
+---
+
+#########################################################
+## Podman Create Network module                        ##
+#########################################################
+# Validate global variables.
+- name: Validate variables for Podman Network module...
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - container_repository_url
+    - container_name
+    - container_network
+
+##################################
+# Create podman network quadlet  #
+##################################
+
+# Create Podman network to isolate one or more containers in running environment
+- name: "Create Podman Network with name {{ container_network }}..."
+  become: true
+  become_user: "{{ podman_service_user }}"
+  containers.podman.podman_network:
+    name: "{{ container_network }}"
+    state: quadlet

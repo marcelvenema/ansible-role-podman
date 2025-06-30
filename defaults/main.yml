@@ -4,7 +4,7 @@ podman_data_folder: "/data"
 # name of user to run podman service
 podman_service_user: "podman"
 # name of group to run podman service
-podman_service_group: "podman-group"
+podman_service_group: "podman"
 
 # Variables for configuring Vault to store secrets and configuration data
 # <container_name>_secret_engine_name is the name of the vault used for storing secrets and configuration data. example: "nexus-repository".

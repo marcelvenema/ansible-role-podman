@@ -1,8 +1,19 @@
 ---
-
 #########################################################
 ## Podman Import Container module                      ##
 #########################################################
+# register variables to facts when looped play
+- name: "set proper container facts based on looped variables..." 
+  ansible.builtin.set_fact:
+    container_repository_url: "{{ item.container_repository_url }}"
+    container_name: "{{ item.container_name }}"
+    container_repository_tag: "{{ item.container_repository_tag }}"
+    container_volumes: "{{ item.container_volumes }}"
+    container_quadlet_options: "{{ item.container_quadlet_options }}"
+    container_env: "{{ item.container_env | default(omit) }}"
+  when: 
+   - item.container_name is defined  
+
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
@@ -14,6 +25,7 @@
   loop:
     - container_repository_url
     - container_name
+
 
 #########################################################
 ## Import container image                              ##
@@ -41,7 +53,6 @@
     cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag }}"
   register: pull_result
   ignore_errors: true
-  no_log: true # Prevent logging to screen
 
 # If pull failed, try to use local file
 - name: Install local image file
@@ -134,6 +145,7 @@
     - name: Register variable (image_name)
       ansible.builtin.set_fact:
         image_name: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | first }}"
+        container_repository_tag: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | last  }}"
 
     # Get image info from podman
     - name: Gather info on container image (file)
@@ -147,6 +159,18 @@
     - name: Find image id
       ansible.builtin.set_fact:
         image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+        
+    # Set default quadlet options for static container images    
+    - name: Register variable (container_quadlet_options)
+      ansible.builtin.set_fact:
+        container_quadlet_options:
+          - "Environment={{ container_env | default(omit) }}"
+          - |
+            [Install]
+            WantedBy=default.target 
+      when: 
+        - container_quadlet_options is not defined or container_quadlet_options == ""
+        - pull_result is failed               
 
 # Get image info from podman
 # only if pull was successful
@@ -161,12 +185,9 @@
 # Find image id, do not use json_query as it is not installed on all systems
 - name: Find image id
   ansible.builtin.set_fact:
-    image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+    #image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+    image_id: "{{ container_repository_url }}:{{ container_repository_tag }}"
   when: pull_result is succeeded
-
-##################################
-# Container volumes              #
-##################################
 
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
@@ -189,46 +210,105 @@
     container_security_opt: "unset"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == ""
 
+
 # Create podman container without security options
 - name: "Create container {{ container_name }} (no security_opt) with id {{ image_id }}..."
   become: true
   become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
+    pod: "{{ container_pod | default(omit) }}"
     image: "{{ image_id }}"
+    #tag: "{{ container_repository_tag }}"
+    state: quadlet
     arch: "{{ container_arch | default(omit) }}"
     ports: "{{ container_ports | default(omit) }}"
     volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
-    restart_policy: always
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
     user: "{{ container_user | default (omit) }}"
-    env: "{{ container_env | default(omit) }}"
+    quadlet_filename: "container_{{ container_name }}"
+    quadlet_file_mode: '0640'
+    quadlet_options: "{{ container_quadlet_options }}"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == "unset"
 
 # Create podman container with security options
-- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
+- name: "Create vault test container {{ container_name }} (security_opt) with id {{ image_id }}..."
   become: true
   become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
+    pod: "{{ container_pod | default(omit) }}" 
     image: "{{ image_id }}"
+    #tag: "{{ container_repository_tag }}"
+    state: quadlet
     arch: "{{ container_arch | default(omit) }}"
     ports: "{{ container_ports | default(omit) }}"
-    volumes: "{{ _container_volumes | default(omit) }}"
+    volumes: "{{ _container_volumes }}"
     command: "{{ container_command | default(omit) }}"
-    restart_policy: always
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
     security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
-    env: "{{ container_env | default(omit) }}"
+    quadlet_filename: "container_{{ container_name }}"
+    quadlet_file_mode: '0640'
+    quadlet_options: "{{ container_quadlet_options }}"
   when: container_security_opt != "unset"
+
+# Create podman container with security options
+#- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
+#  become: true
+#  become_user: "{{ podman_service_user }}"
+#  containers.podman.podman_container:
+#    name: "{{ container_name }}"
+#    image: "{{ image_id }}"
+#    arch: "{{ container_arch | default(omit) }}"
+#    ports: "{{ container_ports | default(omit) }}"
+#    volumes: "{{ _container_volumes | default(omit) }}"
+#    command: "{{ container_command | default(omit) }}"
+#    restart_policy: always
+#    privileged: "{{ container_privileged | default(false) | bool }}"
+#    cap_add: "{{ container_cap_add | default(omit) }}"
+#    security_opt: "{{ container_security_opt | default(omit) }}"
+#    user: "{{ container_user | default(omit) }}"
+#    env: "{{ container_env | default(omit) }}"
+#  when: container_security_opt != "unset" and container_name != vault
 
 ##################################
 # Auto-start                     #
 ##################################
+#- name: Generate container quadlet file...
+#  become: true
+#  become_user: "{{ podman_service_user }}"
+#  containers.podman.podman_container:
+#    name: "{{ container_name }}" 
+#    state: quadlet
+#    image: "{{ image_id }}"
+#    arch: "{{ container_arch | default(omit) }}"
+#    ports: "{{ container_ports | default(omit) }}"
+##    volumes: "{{ container_volumes }}"
+#    volumes:
+#      - "{{ container_volumes.volume1 }}"
+#      - "{{ container_volumes.volume2 }}"
+#      - "{{ container_volumes.volume3 }}"
+#    command: "{{ container_command | default(omit) }}"
+#    privileged: "{{ container_privileged | default(false) | bool }}"
+#    cap_add: "{{ container_cap_add | default(omit) }}"
+#    security_opt: "{{ container_security_opt | default(omit) }}"
+#    user: "{{ container_user | default(omit) }}"
+#    env: "{{ container_env | default(omit) }}"
+#    quadlet_filename: "container_{{ container_name }}"
+#    quadlet_file_mode: '0640'
+#    quadlet_options:
+#      - "AutoUpdate=registry"
+#      - "Pull=newer"
+#      - |
+#        [Install]
+#        WantedBy=default.target
+#  when: 
+#    - container_security_opt != "unset"
+#    -  not container_pod is defined
 
 # - name: Generate systemd unit file for container
 #   become: true
@@ -238,26 +318,39 @@
 #     new: true
 #     no_header: true
 #     dest: ~/.config/systemd/user/
-
-
-# Fetch proper userID for 
-- name: Retrieve userID to enable systemd user base...
+- name: Retrieve userId to enable systemd user base...
   ansible.builtin.getent:
     database: passwd
     key: "{{ podman_service_user }}"
 
-# - name: Ensure container is started and enabled
-#   become: true
-#   become_user: "{{ podman_service_user }}"
-#   ansible.builtin.systemd:
-#     name: "container_{{ container_name }}"
-#     daemon_reload: true
-#     state: started
-#     enabled: true
-#     scope: user
-#   environment:
-#     XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"
-#   when: item.container_name is not defined
+- name: Ensure container is started and enabled...
+  become: true
+  become_user: "{{ podman_service_user }}"
+  ansible.builtin.systemd:
+    name: "container_{{ container_name }}"
+    daemon_reload: true
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
+  when: 
+   - item.container_name is not defined  
+
+- name: Ensure pod is started and enabled...
+  become: true
+  become_user: "{{ podman_service_user }}"
+  ansible.builtin.systemd:
+    name: "{{ container_pod | splitext | first }}-pod"
+    daemon_reload: true
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
+  when: 
+   - item.container_name is defined  
+   - ansible_loop.last
 
 #########################################################
 ## Post-actions                                        ##

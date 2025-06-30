@@ -80,6 +80,23 @@
 - name: Start import_container action...
   ansible.builtin.include_tasks: containers/import_container.yml
   when: action == "import_container"
+
+- name: Start create_networks action...
+  ansible.builtin.include_tasks: containers/networks.yml
+  when: action == "create_networks"
+
+- name: Start destroy_networks action...
+  ansible.builtin.include_tasks: containers/networks.yml
+  when: action == "destroy_networks"
+
+- name: Start create_pods action...
+  ansible.builtin.include_tasks: containers/pods.yml
+  when: action == "create_pods"
+
+- name: Start destroy_pods action...
+  ansible.builtin.include_tasks: containers/pods.yml
+  when: action == "destroy_pods"
+
 # -------------------------------------------------------
 - name: Start export_image action...
   ansible.builtin.include_tasks: images/images.yml

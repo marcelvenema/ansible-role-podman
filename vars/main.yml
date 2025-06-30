@@ -103,6 +103,10 @@ actions:
             description: "Name of the container."
             icon: "media/icon_podman.png"
             required: true
+        - container_tag:
+            description: "Tag of the container."
+            icon: "media/icon_podman.png"
+            required: false
 
   - run_container_command:
       description: "Run command in container."
@@ -114,6 +118,54 @@ actions:
             required: true
         - container_command:
             description: "Command to run in the container."
+            icon: "media/icon_podman.png"
+            required: true
+
+  - create_networks:
+      description: "Create network(s) for container communication."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_network:
+            description: "Name of the network to create."
+            icon: "media/icon_podman.png"
+            required: true
+        - container_network_subnet:
+            description: "Subnet for the network."
+            icon: "media/icon_podman.png"
+            required: false
+        - container_network_gateway:
+            description: "Gateway for the network."
+            icon: "media/icon_podman.png"
+            required: false
+  
+  - destroy_networks:
+      description: "Remove network(s) for container communication."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_network:
+            description: "Name of the network to remove."
+            icon: "media/icon_podman.png"
+            required: true
+
+  - create_pods:
+      description: "Create pod(s) for container grouping."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_pod:
+            description: "Name of the pod to create."
+            icon: "media/icon_podman.png"
+            required: true
+        - container_ports:
+            description: "Ports to expose for the pod."
+            icon: "media/icon_podman.png"
+            required: false
+
+  - destroy_pods:
+      description: "Remove pod(s) for container grouping."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_pod:
+            description: "Name of the pod to remove."
             icon: "media/icon_podman.png"
             required: true
 # -------------------------------------------------------

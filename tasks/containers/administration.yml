@@ -107,43 +107,36 @@
 - name: restart Podman container...
   when: action == "restart_container"
   block:
-  
-    # Fetch proper userID for 
-    - name: Retrieve userID to enable systemd user base...
+ 
+    # Fetch proper userID for user based D-bus interaction
+    - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
         key: "{{ podman_service_user }}"
 
-    # # Restart container through systemd
-    # - name: "Restart container ({{ container_name }})..."
-    #   become: true
-    #   become_user: "{{ podman_service_user }}"
-    #   ansible.builtin.systemd:
-    #     name: "{{ container_name }}"
-    #     state: restarted
-    #     scope: user
-    #   environment:
-    #     XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"
-    #   register: restart_container_result
-
-    # Restart container
+    # Restart container through systemd
     - name: "Restart container ({{ container_name }})..."
       become: true
       become_user: "{{ podman_service_user }}"
-      ansible.builtin.command: "podman restart {{ container_name }}"
-      register: restart_container_result
-
+      ansible.builtin.systemd:
+        name: "container_{{ container_name }}"
+        state: restarted
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
+      register: restart_result
 
     # Check result
-    - name: Show restart result...
-      ansible.builtin.debug:
-        msg: "Container {{ container_name }} restarted with result {{ restart_container_result }}..."
+    - name: " Show restart result..."
+      debug:
+        msg: "Restarted container ({{ container_name }}) with result {{ restart_result.Result }}"     
 
     # TODO: Send message to Kafka bus
     - name: Publish message to Kafka bus...
       ansible.builtin.debug:
         msg: "TODO: Publish message to Kafka bus..."
       when: kafka_bootstrap_servers is defined 
+
 
 #########################################################
 ## Update container                                    ##

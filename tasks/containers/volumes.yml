@@ -3,6 +3,19 @@
 #########################################################
 ## Podman Volumes module                               ##
 #########################################################
+
+# register variables to facts when looped play
+- name: "set proper container facts based on looped variables..." 
+  ansible.builtin.set_fact:
+    container_repository_url: "{{ item.container_repository_url }}"
+    container_name: "{{ item.container_name }}"
+    container_repository_tag: "{{ item.container_repository_tag }}"
+    container_volumes: "{{ item.container_volumes }}"
+    container_quadlet_options: "{{ item.container_quadlet_options }}"
+    container_env: "{{ item.container_env | default(omit) }}"
+  when: 
+   - item.container_name is defined  
+
 # Validate global variables.
 - name: Validate variables for Podman Volumes module...
   ansible.builtin.assert:
@@ -13,6 +26,7 @@
     loop_var: varitem
   loop:
     - container_volumes
+
 
 #########################################################
 ## create_volumes                                      ##
@@ -45,8 +59,8 @@
         path: "{{ item.split(':')[0] }}"
         state: directory
         owner: "{{ volume_owner | default(podman_service_user) }}"
-        group: "{{ volume_group | default(podman_service_group) }}"
-        mode: "{{ volume_mode | default('0644') }}"
+        group: "{{ volume_group | default(podman_service_user) }}"
+        mode: "{{ volume_mode | default('0774') }}"
       with_items: "{{ _container_volumes.split(',') }}"
       when: container_volumes | length > 0
 

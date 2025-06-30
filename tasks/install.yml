@@ -1,4 +1,4 @@
---- 
+---
 
 #########################################################
 ## Podman installation                                 ##
@@ -22,12 +22,18 @@
 #########################################################
 ## Uninstall before install                            ##
 #########################################################
+
+# Set uninstall if not defined
+- name: Gather variables (uninstall)...
+  ansible.builtin.set_fact:
+    uninstall: false
+  when: uninstall is not defined
+
 # Run uninstall if Podman is installed and uninstall is set
 - name: Run uninstall action if Podman is installed...
   ansible.builtin.include_tasks: uninstall.yml
-  when: 
+  when:
     - '"podman" in ansible_facts.packages'
-    - uninstall is defined
     - uninstall == true
 
 #########################################################
@@ -38,7 +44,7 @@
 #########################################################
 ## Installation                                        ##
 #########################################################
-# Install Podman on RHEL
+# Install Podman on server
 - name: Install Podman on RHEL platform...
   become: true
   ansible.builtin.package:
@@ -49,14 +55,11 @@
     state: present
   when: ansible_os_family == "RedHat"
 
-# Install Podman on Ubuntu
+# Install Podman on server
 - name: Install Podman on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: 
-     - podman
-     - container-tools
-     - container-selinux
+    name: podman
     update_cache: yes
     state: present
   when: ansible_pkg_mgr == 'apt'
