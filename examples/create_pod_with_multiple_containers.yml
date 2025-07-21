@@ -1,0 +1,20 @@
+---
+
+# Create pod with multiple containers
+- name: Import container based on quadlet
+  hosts: localhost
+  vars:
+    vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
+    vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
+
+  tasks:
+
+ # Create Volumes
+  - name: "Create {{ item.container_name }} volumes on podman"
+    ansible.builtin.include_role:
+      name: podman
+    loop: "{{ containers }}"
+    loop_control:
+      label: "{{ item.container_name }}"
+    vars:
+      action: create_volumes    

@@ -6,16 +6,17 @@
 
 # include task gather_podman_variables.yml
 - name: Gather Podman variables...
-  ansible.builtin.include_tasks: gather_nexus_repository_variables.yml
+  ansible.builtin.include_tasks: gather_podman_variables.yml
   when:
     - vault_address is defined
     - vault_token is defined
-    - podman_secret_engine_name is defined
-    - podman_vault_id is defined
+    - podman_vars.secrets.secret_engine_name is defined
+    - podman_vars.secrets.vault_id is defined
 
 #########################################################
 ## Start Podman service                                ##
 #########################################################
+
 # Start podman service.
 - name: Start Podman service
   when: action == 'start'
@@ -28,15 +29,10 @@
         state: started
         enabled: yes
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Stop Podman service                                 ##
 #########################################################
+
 # Stop podman service.
 - name: Stop Podman service
   when: action == 'stop'
@@ -49,15 +45,10 @@
         state: stopped
         enabled: no
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Update Podman                                       ##
 #########################################################
+
 # Update Podman to latest version.
 - name: Update Podman service
   when: action == 'update'
@@ -70,16 +61,11 @@
         name: "podman"
         state: latest
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Post actions                                        ##
 #########################################################
+
 # Unset variables
-- name: Unset variables...
-  ansible.builtin.set_fact:
-    action_parameters: null
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

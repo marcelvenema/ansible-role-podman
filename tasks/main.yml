@@ -22,6 +22,18 @@
     fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
     quiet: true
 
+# Get defaults for the role
+- name: Gather variables (podman)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: podman_defaults
+
+# Set variables for the role
+- name: Register variables (podman)...
+  ansible.builtin.set_fact:
+    podman_vars: "{{ podman_defaults | combine(podman | default({}), recursive=True) }}"
+  when: podman is defined
+
 # TODO: Send message to Kafka bus
 - name: Publish message to Kafka bus...
   ansible.builtin.debug:
@@ -29,6 +41,7 @@
   when: kafka_bootstrap_servers is defined 
 
 # -------------------------------------------------------
+# Default actions
 - name: Start install action...
   ansible.builtin.include_tasks: install.yml
   when: action == "install"
@@ -52,7 +65,9 @@
 - name: Start stop action...
   ansible.builtin.include_tasks: administration.yml
   when: action == "stop"
+
 # -------------------------------------------------------
+# Container actions
 - name: Start start_container action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "start_container"
@@ -81,23 +96,32 @@
   ansible.builtin.include_tasks: containers/import_container.yml
   when: action == "import_container"
 
+# -------------------------------------------------------
+# Networks actions
 - name: Start create_networks action...
-  ansible.builtin.include_tasks: containers/networks.yml
+  ansible.builtin.include_tasks: networks/administration.yml
   when: action == "create_networks"
 
 - name: Start destroy_networks action...
-  ansible.builtin.include_tasks: containers/networks.yml
+  ansible.builtin.include_tasks: networks/administration.yml
   when: action == "destroy_networks"
 
+# -------------------------------------------------------
+# Pods actions
 - name: Start create_pods action...
-  ansible.builtin.include_tasks: containers/pods.yml
-  when: action == "create_pods"
+  ansible.builtin.include_tasks: pods/administration.yml
+  when: action == "create_pod"
 
 - name: Start destroy_pods action...
-  ansible.builtin.include_tasks: containers/pods.yml
-  when: action == "destroy_pods"
+  ansible.builtin.include_tasks: pods/administration.yml
+  when: action == "destroy_pod"
+
+- name: Start restart_pod action...
+  ansible.builtin.include_tasks: pods/administration.yml
+  when: action == "restart_pod"
 
 # -------------------------------------------------------
+# Images actions
 - name: Start export_image action...
   ansible.builtin.include_tasks: images/images.yml
   when: action == "export_image"
@@ -107,6 +131,7 @@
   when: action == "import_image"
 
 # -------------------------------------------------------
+# Volumes actions
 - name: Start create_volumes action...
   ansible.builtin.include_tasks: containers/volumes.yml
   when: action == "create_volumes"

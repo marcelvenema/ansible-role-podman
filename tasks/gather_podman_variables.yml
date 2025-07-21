@@ -14,6 +14,9 @@
       loop_control:
         loop_var: varitem
       loop:
-        - podman_secret_engine_name
-        - podman_vault_id
+        - podman_vars.secrets.secret_engine_name
+        - podman_vars.secrets.secret_name
 
+
+    # Gather Podman variables from Vault
+    # TODO

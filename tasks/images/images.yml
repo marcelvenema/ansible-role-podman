@@ -2,6 +2,7 @@
 #########################################################
 ## Podman Images module                                ##
 #########################################################
+
 # Validate global variables.
 - name: Validate variables for Podman images module...
   ansible.builtin.assert:
@@ -16,19 +17,11 @@
 #########################################################
 ## Export image                                        ##
 #########################################################
+
+# Export Podman image
 - name: Export Podman image...
   when: action == "export_image"
   block:
-
-    # Validate required variables
-    - name: Validate required variables for action.
-      ansible.builtin.assert:
-        that: 'item is defined'
-        fail_msg: "Required variable '{{ item }}' has not been provided."
-        quiet: true
-      with_items:
-        - podman_export_folder
-        - podman_repository_tag
 
     # Ensure export folder is present
     - name: Assert podman_export_folder is present...
@@ -59,74 +52,10 @@
       ansible.builtin.shell: "podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ podman_repository_url }}:{{ podman_repository_tag }}"
       register: save_result
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined
-
-#########################################################
-## Import image                                        ##
-#########################################################
-- name: Import Podman image...
-  when: action == "import_image"
-  block:
-
-    # Validate required variables
-    - name: Validate required variables for action.
-      ansible.builtin.assert:
-        that: 'item is defined'
-        fail_msg: "Required variable '{{ item }}' has not been provided."
-        quiet: true
-      with_items:
-        - podman_image_file
-
-    # Check if podman_image_file is a URL or local path
-    - name: "Assert if image file ({{ podman_image_file }}) is an URL or local path..."
-      ansible.builtin.set_fact:
-        podman_image_file_is_url: "{{ podman_image_file.startswith('http://') or podman_image_file.startswith('https://') }}"
-      no_log: true
-
-    # If podman_image_file is a URL, download it
-    - name: Download Podman image file from URL...
-      when: podman_image_file_is_url
-      block:
-
-        # Download Podman image file from URL
-        - name: Download Podman image file from URL...
-          ansible.builtin.get_url:
-            url: "{{ podman_image_file }}"
-            dest: "/tmp/{{ podman_image_file | basename }}"
-          register: download_result
-
-        # Save image file to podman image library
-        - name: "Save image file to Podman image library..."
-          ansible.builtin.shell: "podman image load --input '{{ podman_image_file }}'"
-          register: save_result
-
-        # Delete downloaded file
-        - name: Delete downloaded Podman image file...
-          ansible.builtin.file:
-            path: "/tmp/{{ podman_image_file | basename }}"
-            state: absent
-
-
-
-
-    # Save image file to podman image library
-    - name: "Save image file to Podman image library..."
-      ansible.builtin.shell: "podman image load --input '{{ podman_image_file }}'"
-      register: save_result
-
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined
-
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+
 # Unset variables
 - name: Unset variables...
   set_fact:
@@ -134,6 +63,5 @@
     podman_repository_url: null
     podman_repository_tag: null
     podman_export_folder: null
-    podman_image_file: null
     pull_result: null
     save_result: null

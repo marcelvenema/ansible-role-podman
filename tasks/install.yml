@@ -3,15 +3,11 @@
 #########################################################
 ## Podman installation                                 ##
 #########################################################
+
 # Gather installed packages
 - name: Gather installed packages...
   ansible.builtin.package_facts:
     manager: auto
-
-# Set action_parameters variable to pameter list in actions where key is equal to action
-- name: "Gather variables for action ({{ action }})..."
-  set_fact:
-    action_parameters: "{{ (actions | map('dict2items') | map('first') | selectattr('key', 'equalto', action) | map(attribute='value') | first).parameters }}"
 
 # Check if Podman is installed
 - name: Determine Podman container infrastructure...
@@ -26,24 +22,24 @@
 # Set uninstall if not defined
 - name: Gather variables (uninstall)...
   ansible.builtin.set_fact:
-    uninstall: false
-  when: uninstall is not defined
+    podman_vars.uninstall: false
+  when: podman_vars.uninstall is not defined
 
 # Run uninstall if Podman is installed and uninstall is set
 - name: Run uninstall action if Podman is installed...
   ansible.builtin.include_tasks: uninstall.yml
   when:
     - '"podman" in ansible_facts.packages'
-    - uninstall == true
+    - podman_vars.uninstall == true
 
 #########################################################
 ## Pre-installation                                    ##
 #########################################################
 
-
 #########################################################
 ## Installation                                        ##
 #########################################################
+
 # Install Podman on server
 - name: Install Podman on RHEL platform...
   become: true
@@ -75,6 +71,7 @@
 #########################################################
 ## Configuration                                       ##
 #########################################################
+
 # Configure Podman
 - name: Start configure task...
   ansible.builtin.include_tasks: configure.yml
@@ -85,13 +82,7 @@
 ## Post-install                                        ##
 #########################################################
 
-# TODO: Send message to Kafka bus
-- name: Publish message to Kafka bus...
-  ansible.builtin.debug:
-    msg: "TODO: Publish message to Kafka bus..."
-  when: kafka_bootstrap_servers is defined
-
 # Unset variables
-- name: Unset variables...
-  ansible.builtin.set_fact:
-    action_parameters: null
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

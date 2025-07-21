@@ -1,18 +1,30 @@
 ---
+
 #########################################################
 ## Podman Import Container module                      ##
 #########################################################
-# register variables to facts when looped play
-- name: "set proper container facts based on looped variables..." 
+
+# Register variables to facts when looped play
+- name: "Register container variables (looped)..."
   ansible.builtin.set_fact:
-    container_repository_url: "{{ item.container_repository_url }}"
-    container_name: "{{ item.container_name }}"
-    container_repository_tag: "{{ item.container_repository_tag }}"
-    container_volumes: "{{ item.container_volumes }}"
-    container_quadlet_options: "{{ item.container_quadlet_options }}"
-    container_env: "{{ item.container_env | default(omit) }}"
-  when: 
-   - item.container_name is defined  
+    container_repository_url: "{{ item.value.container_repository_url }}"
+    container_name: "{{ item.value.container_name }}"
+    container_repository_tag: "{{ item.value.container_repository_tag | default(omit) }}"
+    container_volumes: "{{ item.value.container_volumes }}"
+    container_quadlet_options: "{{ item.value.container_quadlet_options }}"
+    container_ports: "{{ item.value.container_ports | default(omit) }}"
+    container_env: "{{ item.value.container_env | default(omit) }}"
+    container_command: "{{ item.value.container_command| default(omit) }}"
+    container_security_opt: "{{ item.value.container_security_opt | default(omit) }}"
+    container_cap_add: "{{ item.value.container_cap_add | default(omit) }}"
+    container_healthcheck: "{{ item.value.container_healthcheck | default(omit) }}"
+    container_healthcheck_fail: "{{ item.value.container_healthcheck_fail | default('none') }}"
+    container_healtcheck_interval: "{{ item.value.container_healthcheck_interval | default(omit) }}"
+    container_healthcheck_retries: "{{ item.value.container_healthcheck_retries | default(omit) }}"
+    container_healthcheck_start: "{{ item.value.container_healthcheck_start | default(omit) }}"
+    container_healthcheck_timeout: "{{ item.value.container_healthcheck_timeout | default(omit) }}"
+  when:
+   - item.value.container_name is defined
 
 # Validate global variables.
 - name: Validate variables for Podman containers module...
@@ -26,7 +38,6 @@
     - container_repository_url
     - container_name
 
-
 #########################################################
 ## Import container image                              ##
 #########################################################
@@ -39,46 +50,52 @@
     container_repository_tag: "latest"
   when: container_repository_tag is not defined or container_repository_tag == ""
 
-# Show information
-- name: Show information
-  ansible.builtin.debug:
-    msg: "Get container image from registry ({{ container_repository_url }}). this may take a while..."
+# CONTAINER IMAGE REGISTRY
+# Get container image direct from registry
+- name: "Get container image from registry {{ container_repository_url }}:{{ container_repository_tag }}..."
+  when: container_repository_url != "" and not container_repository_url.endswith(".tar")
+  block:
 
-# Pull image from repository to local image repository. If failed, lookup local image file.
-# become is true to pull into system wide (root) storage
-- name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag }}"
-  become: true
-  become_user: "{{ podman_service_user }}"
-  ansible.builtin.command:
-    cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag }}"
-  register: pull_result
-  ignore_errors: true
+    # Show information
+    - name: Show information
+      ansible.builtin.debug:
+        msg: "Get container image from registry ({{ container_repository_url }}). this may take a while..."
 
-# If pull failed, try to use local file
-- name: Install local image file
-  when: pull_result is failed
+    # Pull image from repository to local image repository. If failed, lookup local image file.
+    # become is true to pull into system wide (root) storage
+    - name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag }}..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.command:
+        cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag }}"
+      register: pull_result
+      ignore_errors: true
+
+# LOCAL CONTAINER IMAGE FILE
+# If local file, load image from local file
+- name: "Install local image file {{ container_repository_url }}..."
   block:
 
     # Show information message
     - name: Show information message
       ansible.builtin.debug:
-        msg: "Cannot pull from container repository, trying to load from file..."
+        msg: "Load container image from local file {{ container_repository_url }}. This may take a while..."
 
     # Delete local temp file
-    - name: "Delete local file /tmp/{{ container_name }}"
+    - name: "Delete local file /tmp/{{ container_name }}..."
       ansible.builtin.file:
         path: "/tmp/{{ container_name }}.tar"
         state: absent
 
     # repository_url is a local container file, check if file exists on ansible host
-    - name: Check if repository_url is a local container file
+    - name: Check if repository_url is a local container file...
       ansible.builtin.stat:
         path: "{{ container_repository_url }}"
       register: container_repository_url_result
       delegate_to: localhost
 
     # Copy image file to destination if local file
-    - name: Copy container image file to destination
+    - name: Copy container image file to destination...
       ansible.builtin.copy:
         src: "{{ container_repository_url }}"
         dest: "/tmp/{{ container_name }}.tar"
@@ -86,7 +103,7 @@
         - container_repository_url_result.stat.exists == true
 
     # Download local file if http or https
-    - name: "Download file from {{ container_repository_url }}"
+    - name: "Download file from {{ container_repository_url }}..."
       ansible.builtin.get_url:
         url: "{{ container_repository_url }}"
         dest: "/tmp/{{ container_name }}.tar"
@@ -99,7 +116,7 @@
       register: container_tar_result
 
     # Fail if image file not found
-    - name: Fail if container image file not found
+    - name: Fail if container image file not found...
       ansible.builtin.fail:
         msg: "Repository URL {{ container_repository_url }} not found. Container image file location not found. Cannot continue..."
       when:
@@ -109,35 +126,43 @@
     # Checksum image                 #
     ##################################
 
-    # If checksum contains :, split it in checksum and algorithm
-    - name: Split checksum and algorithm
-      ansible.builtin.set_fact:
-        repository_checksum: "{{ container_repository_checksum.split(':')[1] }}"
-        repository_checksum_algorithm: "{{ container_repository_checksum.split(':')[0] }}"
-      when: container_repository_checksum is defined and ":" in container_repository_checksum
+    # If checksum is defined, check item
+    # bug, check container_repository_checksum is not defined is not working
+    - name: Parse checksum image
+      when: not (container_repository_checksum | string is search('__omit_place_holder__'))
+      block:
 
-    # Get checksum of container file.tar
-    - name: Get checksum of local container file
-      ansible.builtin.stat:
-        path: "/tmp/{{ container_name }}.tar"
-        checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
-        get_checksum: yes
-      register: checksum_result
-      when : container_repository_checksum is defined
+        # If checksum contains :, split it in checksum and algorithm
+        - name: Split checksum and algorithm
+          ansible.builtin.set_fact:
+            repository_checksum: "{{ container_repository_checksum.split(':')[1] }}"
+            repository_checksum_algorithm: "{{ container_repository_checksum.split(':')[0] }}"
+          when:
+            - "':' in container_repository_checksum"
 
-    # Fail when checksum is not the same
-    - name: Fail when checksum is not correct
-      ansible.builtin.fail:
-        msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
-      when:
-        - container_repository_checksum is defined
-        - checksum_result.stat.checksum != role_repository_checksum
+        # Get checksum of container file.tar
+        - name: Get checksum of local container file
+          ansible.builtin.stat:
+            path: "/tmp/{{ container_name }}.tar"
+            checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
+            get_checksum: yes
+          register: checksum_result
+
+        # Fail when checksum is not the same
+        - name: Fail when checksum is not correct
+          ansible.builtin.fail:
+            msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
+          when:
+            - checksum_result.stat.checksum != container_repository_checksum
+
+    ##################################
+    # Load image                     #
+    ##################################
 
     # Load image from file if pull failed
-    # become is true to pull into system wide (root) storage
-    - name: "Import container image {{ container_name }} to podman"
+    - name: "Import container image {{ container_name }} to podman..."
       become: true
-      become_user: "{{ podman_service_user }}"
+      become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
       register: import_result
 
@@ -148,58 +173,71 @@
         container_repository_tag: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | last  }}"
 
     # Get image info from podman
-    - name: Gather info on container image (file)
+    - name: Gather info on container image (file)...
       become: true
-      become_user: "{{ podman_service_user }}"
+      become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.command:
         cmd: "podman image inspect {{ image_name }}"
       register: images_info
 
     # Find image id, do not use json_query as it is not installed on all systems
-    - name: Find image id
+    - name: Find image id...
       ansible.builtin.set_fact:
         image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
-        
-    # Set default quadlet options for static container images    
+    
+    # Debug message
+    - name: Debug message
+      ansible.builtin.debug:
+        msg: "{{ image_id }}"
+  
+    # Set default quadlet options for static container images
     - name: Register variable (container_quadlet_options)
       ansible.builtin.set_fact:
         container_quadlet_options:
           - "Environment={{ container_env | default(omit) }}"
           - |
             [Install]
-            WantedBy=default.target 
-      when: 
+            WantedBy=default.target
+      when:
         - container_quadlet_options is not defined or container_quadlet_options == ""
-        - pull_result is failed               
 
-# Get image info from podman
-# only if pull was successful
-- name: Gather info on container image
-  become: true
-  become_user: "{{ podman_service_user }}"
-  ansible.builtin.command:
-    cmd: "podman image inspect {{ container_repository_url }}:{{ container_repository_tag }}"
-  register: images_info
-  when: pull_result is succeeded
 
-# Find image id, do not use json_query as it is not installed on all systems
-- name: Find image id
-  ansible.builtin.set_fact:
-    #image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
-    image_id: "{{ container_repository_url }}:{{ container_repository_tag }}"
-  when: pull_result is succeeded
+
+
+# # Get image info from podman
+# # only if pull was successful
+# - name: Gather info on container image...
+#   become: true
+#   become_user: "{{ podman_vars.service_user }}"
+#   ansible.builtin.command:
+#     cmd: 'podman image inspect "{{ container_repository_url }}:{{ container_repository_tag }}"'
+#   register: images_info
+#   when: pull_result is defined or pull_result is not failed
+
+# # Find image id, do not use json_query as it is not installed on all systems
+# - name: Find image id
+#   ansible.builtin.set_fact:
+#     #image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
+#     image_id: "{{ container_repository_url }}:{{ container_repository_tag }}"
+#   when: pull_result is defined
+
+# # Debug message
+# - name: Debug message
+#   ansible.builtin.debug:
+#     msg: "{{ image_id }}"
+
 
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
   ansible.builtin.set_fact:
-    _container_volumes: "{% for item in container_volumes %}{{ podman_data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
+    _container_volumes: "{% for item in container_volumes %}{{ podman_vars.data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 ##################################
 # Create container               #
 ##################################
 
 # Set variable if not defined
-- name: Register variable (container_priviledged)
+- name: Register variable (container_priviledged)...
   ansible.builtin.set_fact:
     container_privileged: false
   when: container_privileged is not defined or container_privileged is none or container_privileged == ""
@@ -210,11 +248,17 @@
     container_security_opt: "unset"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == ""
 
+# Debug message
+- name: Debug message
+  ansible.builtin.debug:
+    msg: "{{ container_env }}"
+  when: container_env is defined
+
 
 # Create podman container without security options
 - name: "Create container {{ container_name }} (no security_opt) with id {{ image_id }}..."
   become: true
-  become_user: "{{ podman_service_user }}"
+  become_user: "{{ podman_vars.service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
     pod: "{{ container_pod | default(omit) }}"
@@ -228,18 +272,25 @@
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
     user: "{{ container_user | default (omit) }}"
+    healthcheck: "{{ container_healthcheck | default(omit) }}"
+    healthcheck_failure_action: "{{ container_healthcheck_fail | default('none') }}"
+    healthcheck_retries: "{{ container_healthcheck_retries | default(omit) }}"
+    healthcheck_interval: "{{ container_healthcheck_interval | default(omit) }}"
+    healthcheck_start_period: "{{ container_healthcheck_start | default(omit) }}"
+    healthcheck_timeout: "{{ container_healthcheck_timeout | default(omit) }}"
+    # env: "{{ container_env | default(omit) }}"
     quadlet_filename: "container_{{ container_name }}"
     quadlet_file_mode: '0640'
     quadlet_options: "{{ container_quadlet_options }}"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == "unset"
 
 # Create podman container with security options
-- name: "Create vault test container {{ container_name }} (security_opt) with id {{ image_id }}..."
+- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
   become: true
-  become_user: "{{ podman_service_user }}"
+  become_user: "{{ podman_vars.service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
-    pod: "{{ container_pod | default(omit) }}" 
+    pod: "{{ container_pod | default(omit) }}"
     image: "{{ image_id }}"
     #tag: "{{ container_repository_tag }}"
     state: quadlet
@@ -251,10 +302,24 @@
     cap_add: "{{ container_cap_add | default(omit) }}"
     security_opt: "{{ container_security_opt | default(omit) }}"
     user: "{{ container_user | default(omit) }}"
+    healthcheck: "{{ container_healthcheck | default(omit) }}"
+    healthcheck_failure_action: "{{ container_healthcheck_fail | default('none') }}"
+    healthcheck_retries: "{{ container_healthcheck_retries | default(omit) }}"
+    healthcheck_interval: "{{ container_healthcheck_interval | default(omit) }}"
+    healthcheck_start_period: "{{ container_healthcheck_start | default(omit) }}"
+    healthcheck_timeout: "{{ container_healthcheck_timeout | default(omit) }}"
+    env: "{{ container_env | default(omit) }}"
     quadlet_filename: "container_{{ container_name }}"
     quadlet_file_mode: '0640'
     quadlet_options: "{{ container_quadlet_options }}"
   when: container_security_opt != "unset"
+  register: container_create_result
+
+# Debug message
+- name: Debug message
+  ansible.builtin.debug:
+    msg: "Container {{ container_name }} created with id {{ image_id }}. Result: {{ container_create_result }}"
+
 
 # Create podman container with security options
 #- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
@@ -275,6 +340,18 @@
 #    env: "{{ container_env | default(omit) }}"
 #  when: container_security_opt != "unset" and container_name != vault
 
+# # Add volume opttion U in case of rootless binded container volume on base filesystem
+# - name: Add rootless bind volume option
+#   become: true
+#   become_user: "{{ podman_vars.users.service_user }}"
+#   ansible.builtin.lineinfile:
+#     path: "~/.config/containers/systemd/container_{{ container_name }}.container"
+#     regex: 'Volume=(.*)$'
+#     line: 'Volume=\1,U'
+#     backrefs: true
+#   when: podman_bind_override
+
+
 ##################################
 # Auto-start                     #
 ##################################
@@ -282,7 +359,7 @@
 #  become: true
 #  become_user: "{{ podman_service_user }}"
 #  containers.podman.podman_container:
-#    name: "{{ container_name }}" 
+#    name: "{{ container_name }}"
 #    state: quadlet
 #    image: "{{ image_id }}"
 #    arch: "{{ container_arch | default(omit) }}"
@@ -306,7 +383,7 @@
 #      - |
 #        [Install]
 #        WantedBy=default.target
-#  when: 
+#  when:
 #    - container_security_opt != "unset"
 #    -  not container_pod is defined
 
@@ -321,11 +398,14 @@
 - name: Retrieve userId to enable systemd user base...
   ansible.builtin.getent:
     database: passwd
-    key: "{{ podman_service_user }}"
+    key: "{{ podman_vars.service_user }}"
 
-- name: Ensure container is started and enabled...
+
+# Container is not part of a pod
+# Ensure container is started and enabled
+- name: "Ensure container {{ container_name }} is started and enabled..."
   become: true
-  become_user: "{{ podman_service_user }}"
+  become_user: "{{ podman_vars.service_user }}"
   ansible.builtin.systemd:
     name: "container_{{ container_name }}"
     daemon_reload: true
@@ -333,33 +413,30 @@
     enabled: true
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
-  when: 
-   - item.container_name is not defined  
+    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+  when:
+   - container_pod is not defined
 
+# Container is part of a pod
+# Ensure pod is started and enabled
 - name: Ensure pod is started and enabled...
   become: true
-  become_user: "{{ podman_service_user }}"
+  become_user: "{{ podman_vars.service_user }}"
   ansible.builtin.systemd:
-    name: "{{ container_pod | splitext | first }}-pod"
+    name: "{{ container_pod | splitext | first }}.pod"
     daemon_reload: true
     state: started
     enabled: true
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
-  when: 
-   - item.container_name is defined  
+    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+  when:
+   - container_pod is defined
    - ansible_loop.last
 
 #########################################################
 ## Post-actions                                        ##
 #########################################################
-# TODO: Send message to Kafka bus
-- name: Publish message to Kafka bus...
-  ansible.builtin.debug:
-    msg: "TODO: Publish message to Kafka bus..."
-  when: kafka_bootstrap_servers is defined 
 
 # Unset variables
 - name: Unset variables

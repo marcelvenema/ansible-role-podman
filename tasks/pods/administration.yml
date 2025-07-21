@@ -1,0 +1,113 @@
+---
+
+#########################################################
+## Podman Pods administration module                   ##
+#########################################################
+
+# Validate global variables.
+- name: Validate variables for Podman pods module...
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - container_pod
+
+#########################################################
+## Restart pod                                         ##
+#########################################################
+
+# Restart pod
+- name: restart Podman pod...
+  when: action == "restart_pod"
+  block:
+  
+    # Fetch proper userID for user based D-bus interaction
+    - name: Retrieve userId to enable systemd user base...
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ podman_vars.service_user }}"
+
+    # Restart container through systemd
+    - name: "Restart pod ({{ container_pod | splitext | first }})..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.systemd:
+        name: "{{ container_pod | splitext | first }}-pod"
+        state: restarted
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"   
+      register: restart_result
+
+    # Check result
+    - name: " Show restart result..."
+      debug:
+        msg: "Podman Pod restarted: ({{ container_pod | splitext | first }}) with result {{ restart_result.status.Result }}"     
+
+#########################################################
+## Create pod                                          ##
+#########################################################
+
+# Create pod
+- name: Create Podman pod...
+  when: action == "create_pod"
+  block:
+
+    # Validate global variables.
+    - name: Validate variables for Podman Pod module...
+      ansible.builtin.assert:
+        that: "varitem is defined"
+        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        quiet: true
+      loop_control:
+        loop_var: varitem
+      loop:
+        - container_repository_url
+        - container_name
+
+    # Create Podman pod quadlet to isolate one or more containers in running environment
+    - name: "Create Podman Pod with name {{ container_pod | splitext | first }}..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      containers.podman.podman_pod:
+        name: "{{ container_pod | splitext | first }}"
+        state: quadlet
+        network: "{{ container_network }}"
+        ports: "{{ container_pod_ports | default(omit) }}"
+        publish: "{{ pod_ports | default(omit) }}"
+        quadlet_filename: "{{ container_pod }}"
+        quadlet_file_mode: '0640'
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target    
+
+#########################################################
+## Destroy pod                                         ##
+#########################################################
+
+# Create pod
+- name: Create Podman pod...
+  when: action == "destroy_pod"
+  block:
+
+    # Show information message
+    - name: "This part is not (yet) implemented."
+      ansible.builtin.debug:
+        msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
+
+#########################################################
+## Post-actions                                        ##
+#########################################################
+
+# Unset variables
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

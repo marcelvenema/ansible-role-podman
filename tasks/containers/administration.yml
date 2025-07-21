@@ -3,6 +3,7 @@
 #########################################################
 ## Podman Container administration module              ##
 #########################################################
+
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
@@ -17,12 +18,14 @@
 #########################################################
 ## Run command inside container                        ##
 #########################################################
+
+# Run command inside container.
 - name: Start Podman container...
   when: action == "run_container_command"
   block:
 
     # Validate required variables
-    - name: Validate required variables for action.
+    - name: Validate required variables for action...
       ansible.builtin.assert:
         that: 'item is defined'
         fail_msg: "Required variable '{{ item }}' has not been provided."
@@ -40,7 +43,7 @@
     # Run command
     - name: Run command in container...
       become: true
-      become_user: "{{ podman_service_user }}"
+      become_user: "{{ podman_vars.service_user }}"
       containers.podman.podman_container_exec:
         name: "{{ container_name }}"
         command: "{{ container_command }}"
@@ -57,6 +60,7 @@
 #########################################################
 ## Start container                                     ##
 #########################################################
+
 # Start container.
 - name: Start Podman container...
   when: action == "start_container"
@@ -71,15 +75,10 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Stop container                                      ##
 #########################################################
+
 # Stop container.
 - name: Stop Podman container...
   when: action == "stop_container"
@@ -94,15 +93,10 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Restart container                                   ##
 #########################################################
+
 # Restart container
 - name: restart Podman container...
   when: action == "restart_container"
@@ -112,18 +106,18 @@
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
-        key: "{{ podman_service_user }}"
+        key: "{{ podman_vars.service_user }}"
 
     # Restart container through systemd
     - name: "Restart container ({{ container_name }})..."
       become: true
-      become_user: "{{ podman_service_user }}"
+      become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.systemd:
         name: "container_{{ container_name }}"
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_service_user ].1 }}"   
+        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"   
       register: restart_result
 
     # Check result
@@ -131,16 +125,10 @@
       debug:
         msg: "Restarted container ({{ container_name }}) with result {{ restart_result.Result }}"     
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
-
 #########################################################
 ## Update container                                    ##
 #########################################################
+
 # Update container
 - name: Update Podman container...
   when: action == "update_container"
@@ -155,15 +143,10 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Export container                                    ##
 #########################################################
+
 # Export container
 - name: Export Podman container...
   when: action == "export_container"
@@ -178,16 +161,11 @@
     - name: Stop playbook
       ansible.builtin.meta: end_play
 
-    # TODO: Send message to Kafka bus
-    - name: Publish message to Kafka bus...
-      ansible.builtin.debug:
-        msg: "TODO: Publish message to Kafka bus..."
-      when: kafka_bootstrap_servers is defined 
-
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+
 # Unset variables
-- name: Unset variables...
-  ansible.builtin.set_fact:
-    action_parameters: null
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

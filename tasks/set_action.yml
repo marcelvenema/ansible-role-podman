@@ -22,13 +22,13 @@
   ignore_errors: true
 
 # Set action variable when service is not running
-- name: Set variable (action)...
+- name: Register variable (action)...
   set_fact:
     action: "start"
   when: podman_service_status.status != 'running'
 
 # Set action to install if podman is not installed
-- name: Set variable (action)...
+- name: Register variable (action)...
   set_fact:
     action: "install"
   when: "'podman' not in ansible_facts.packages"
