@@ -66,14 +66,25 @@
   when: action == "start_container"
   block:
 
-    # Show information message
-    - name: "This part is not (yet) implemented."
-      ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
+    - name: Retrieve userId to enable systemd user base...
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ podman_vars.service_user }}"
 
-    # Stop playbook
-    - name: Stop playbook
-      ansible.builtin.meta: end_play
+    # Container is not part of a pod
+    # Ensure container is started and enabled
+    - name: "Ensure container {{ container_name }} is started and enabled..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.systemd:
+        name: "container_{{ container_name }}"
+        daemon_reload: true
+        state: started
+        enabled: true
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+
 
 #########################################################
 ## Stop container                                      ##

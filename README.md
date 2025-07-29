@@ -10,7 +10,73 @@ Red Hat Podman is an open-source container management tool designed for building
 Ansible role Podman : [Design](docs/DESIGN.md)  |  [Examples](examples)  |  [Test](molecule)  |  [Issues]()  |<br>
 Latest version:
 
-# Actions:
+# Actions summary
+
+<table style="border:0px; width:100%">
+<tr><th>Deployment</th><th>Administration</th><th>Containers</th><td>Images</th><th>Volumes</th></tr>
+<tr>
+  <td valign=top>install<br>uninstall<br>update</td>
+  <td valign=top>configure<br>start<br>stop<br>configure_vault</td>
+  <td valign=top>
+    import_container<br>export_container<br>start_container<br>stop_container<br>restart_container<br>update_container<br>run_container_command<br>
+  </td>
+  <td valign=top>export_image<br>import_image</td>
+  <td valign=top>copy_to_volume<br>create_volumes<br>destroy_volumes</td>
+</tr></table>
+
+
+# Role variables
+```
+---
+
+#########################################################
+## Podman role defaults                                ##
+#########################################################
+
+# default role variables for the podman role
+podman:
+  # address is the URL to connect to Podman server.
+  address: ""
+  # username is the username to connect to the Podman server.
+  username: ""
+  # password is the password to connect to the Podman server.
+  password: ""
+  # token is the token used to authenticate to the Podman server.
+  token: ""
+
+  # metadata contains information about the role.
+  metadata:
+    name: "podman"
+    description: "RedHat Podman container management service."
+    version: "1.0.0"
+    maintainer: ""
+    maintainer_email: ""
+
+  # data_folder is the root folder where the container data is stored. example: "/data" or "/var/lib/podman".
+  data_folder: "/data"
+  # name of user to run podman service
+  service_user: "podman"
+  # password of user to run podman service
+  # service_user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+  # name of group to run podman service
+  service_group: "podman"
+# uninstall indicates if Podman should be uninstalled or not. example: true or false. Default is false.
+  uninstall: false
+
+  # secrets contains the configuration for the vault used for storing secrets and configuration data.
+  secrets:
+    # secret_name is the unique id of the vault used for storing secrets and configuration data. default is {{ansible_fqdn }}.
+    secret_name: "{{ ansible_fqdn | replace('.', '-') }}"
+    # secret_engine_name is the name of the vault used for storing secrets and configuration data. example: "nexus-repository".
+    secret_engine_name: "podman"
+    # <container_name>_secret_engine_description is the description of the vault used for storing secrets and configuration data. example: "Secrets for Sonatype Nexus Repository.".
+    secret_engine_description: "Secrets for RedHat Podman."
+
+```
+
+
+# Actions
+
 
 action: **configure**<br>
 Configure RedHat Podman.<br>

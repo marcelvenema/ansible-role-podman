@@ -31,7 +31,7 @@
 # Set variables for the role
 - name: Register variables (podman)...
   ansible.builtin.set_fact:
-    podman_vars: "{{ podman_defaults | combine(podman | default({}), recursive=True) }}"
+    podman_vars: "{{ podman_defaults.podman | combine( podman | default({}), recursive=True) }}"
   when: podman is defined
 
 # TODO: Send message to Kafka bus
@@ -99,25 +99,25 @@
 # -------------------------------------------------------
 # Networks actions
 - name: Start create_networks action...
-  ansible.builtin.include_tasks: networks/administration.yml
-  when: action == "create_networks"
+  ansible.builtin.include_tasks: network/administration.yml
+  when: action == "create_network"
 
 - name: Start destroy_networks action...
-  ansible.builtin.include_tasks: networks/administration.yml
-  when: action == "destroy_networks"
+  ansible.builtin.include_tasks: network/administration.yml
+  when: action == "destroy_network"
 
 # -------------------------------------------------------
 # Pods actions
 - name: Start create_pods action...
-  ansible.builtin.include_tasks: pods/administration.yml
+  ansible.builtin.include_tasks: pod/administration.yml
   when: action == "create_pod"
 
 - name: Start destroy_pods action...
-  ansible.builtin.include_tasks: pods/administration.yml
+  ansible.builtin.include_tasks: pod/administration.yml
   when: action == "destroy_pod"
 
 - name: Start restart_pod action...
-  ansible.builtin.include_tasks: pods/administration.yml
+  ansible.builtin.include_tasks: pod/administration.yml
   when: action == "restart_pod"
 
 # -------------------------------------------------------

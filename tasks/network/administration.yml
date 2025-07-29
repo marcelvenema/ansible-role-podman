@@ -24,29 +24,21 @@
   when: action == "create_network"
   block:
 
-    # Validate global variables.
-    - name: Validate variables for action...
-      ansible.builtin.assert:
-        that: "varitem is defined"
-        fail_msg: "Required variable '{{ varitem }}' has not been provided."
-        quiet: true
-      loop_control:
-        loop_var: varitem
-      loop:
-        - container_repository_url
-        - container_name
+    # Create Podman network to isolate one or more containers in running environment
+    - name: "Create Podman Network with name {{ container_network }}..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      containers.podman.podman_network:
+        name: "{{ container_network }}"
+        state: quadlet
+        debug: false
+      register: podman_network_create_result
 
-##################################
-# Create podman network quadlet  #
-##################################
-
-# Create Podman network to isolate one or more containers in running environment
-- name: "Create Podman Network with name {{ container_network }}..."
-  become: true
-  become_user: "{{ podman_vars.service_user }}"
-  containers.podman.podman_network:
-    name: "{{ container_network }}"
-    state: quadlet
+    # If result is failed, stop playbook
+    - name: "Check create network result..."
+      ansible.builtin.fail:
+        msg: "Podman network creation failed."
+      when: podman_network_create_result is failed
 
 #########################################################
 ## Podman Destroy Network                              ##
@@ -71,6 +63,6 @@
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-#    <variable>: null
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    podman_network_create_result: null

@@ -121,7 +121,7 @@ actions:
             icon: "media/icon_podman.png"
             required: true
 
-  - create_networks:
+  - create_network:
       description: "Create network(s) for container communication."
       icon: "media/icon_podman.png"
       parameters:
@@ -137,8 +137,8 @@ actions:
             description: "Gateway for the network."
             icon: "media/icon_podman.png"
             required: false
-  
-  - destroy_networks:
+
+  - destroy_network:
       description: "Remove network(s) for container communication."
       icon: "media/icon_podman.png"
       parameters:
@@ -147,8 +147,8 @@ actions:
             icon: "media/icon_podman.png"
             required: true
 
-  - create_pods:
-      description: "Create pod(s) for container grouping."
+  - create_pod:
+      description: "Create pod for container grouping."
       icon: "media/icon_podman.png"
       parameters:
         - container_pod:
@@ -160,14 +160,24 @@ actions:
             icon: "media/icon_podman.png"
             required: false
 
-  - destroy_pods:
-      description: "Remove pod(s) for container grouping."
+  - destroy_pod:
+      description: "Remove pod for container grouping."
       icon: "media/icon_podman.png"
       parameters:
         - container_pod:
             description: "Name of the pod to remove."
             icon: "media/icon_podman.png"
             required: true
+
+  - restart_pod:
+      description: "Restart pod."
+      icon: "media/icon_podman.png"
+      parameters:
+        - container_pod:
+            description: "Name of the pod to restart."
+            icon: "media/icon_podman.png"
+            required: true
+
 # -------------------------------------------------------
 # Podman Images
   - export_image:
@@ -182,7 +192,7 @@ actions:
             description: "Folder to export the image to."
             icon: "media/icon_podman.png"
             required: true
-  
+
   - import_image:
       description: "Import image from tarball."
       icon: "media/icon_podman.png"

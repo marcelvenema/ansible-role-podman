@@ -184,12 +184,7 @@
     - name: Find image id...
       ansible.builtin.set_fact:
         image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
-    
-    # Debug message
-    - name: Debug message
-      ansible.builtin.debug:
-        msg: "{{ image_id }}"
-  
+
     # Set default quadlet options for static container images
     - name: Register variable (container_quadlet_options)
       ansible.builtin.set_fact:
@@ -200,32 +195,6 @@
             WantedBy=default.target
       when:
         - container_quadlet_options is not defined or container_quadlet_options == ""
-
-
-
-
-# # Get image info from podman
-# # only if pull was successful
-# - name: Gather info on container image...
-#   become: true
-#   become_user: "{{ podman_vars.service_user }}"
-#   ansible.builtin.command:
-#     cmd: 'podman image inspect "{{ container_repository_url }}:{{ container_repository_tag }}"'
-#   register: images_info
-#   when: pull_result is defined or pull_result is not failed
-
-# # Find image id, do not use json_query as it is not installed on all systems
-# - name: Find image id
-#   ansible.builtin.set_fact:
-#     #image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
-#     image_id: "{{ container_repository_url }}:{{ container_repository_tag }}"
-#   when: pull_result is defined
-
-# # Debug message
-# - name: Debug message
-#   ansible.builtin.debug:
-#     msg: "{{ image_id }}"
-
 
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
@@ -248,15 +217,8 @@
     container_security_opt: "unset"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == ""
 
-# Debug message
-- name: Debug message
-  ansible.builtin.debug:
-    msg: "{{ container_env }}"
-  when: container_env is defined
-
-
 # Create podman container without security options
-- name: "Create container {{ container_name }} (no security_opt) with id {{ image_id }}..."
+- name: "Create container {{ container_name }} with id {{ image_id }}..."
   become: true
   become_user: "{{ podman_vars.service_user }}"
   containers.podman.podman_container:
@@ -283,6 +245,7 @@
     quadlet_file_mode: '0640'
     quadlet_options: "{{ container_quadlet_options }}"
   when: container_security_opt is not defined or container_security_opt is none or container_security_opt == "unset"
+  register: container_create_result
 
 # Create podman container with security options
 - name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
@@ -315,10 +278,7 @@
   when: container_security_opt != "unset"
   register: container_create_result
 
-# Debug message
-- name: Debug message
-  ansible.builtin.debug:
-    msg: "Container {{ container_name }} created with id {{ image_id }}. Result: {{ container_create_result }}"
+
 
 
 # Create podman container with security options
@@ -395,11 +355,12 @@
 #     new: true
 #     no_header: true
 #     dest: ~/.config/systemd/user/
+
+
 - name: Retrieve userId to enable systemd user base...
   ansible.builtin.getent:
     database: passwd
     key: "{{ podman_vars.service_user }}"
-
 
 # Container is not part of a pod
 # Ensure container is started and enabled
@@ -419,20 +380,19 @@
 
 # Container is part of a pod
 # Ensure pod is started and enabled
-- name: Ensure pod is started and enabled...
-  become: true
-  become_user: "{{ podman_vars.service_user }}"
-  ansible.builtin.systemd:
-    name: "{{ container_pod | splitext | first }}.pod"
-    daemon_reload: true
-    state: started
-    enabled: true
-    scope: user
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
-  when:
-   - container_pod is defined
-   - ansible_loop.last
+# - name: Ensure pod is started and enabled...
+#   become: true
+#   become_user: "{{ podman_vars.service_user }}"
+#   ansible.builtin.systemd:
+#     name: "{{ container_pod | splitext | first }}.pod"
+#     daemon_reload: true
+#     state: started
+#     enabled: true
+#     scope: user
+#   environment:
+#     XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+#   when:
+#    - container_pod is defined
 
 #########################################################
 ## Post-actions                                        ##
