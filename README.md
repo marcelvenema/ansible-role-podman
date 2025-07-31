@@ -25,7 +25,7 @@ Latest release: <kbd>R1</kbd> - See [RELEASES] for more information.<br>
 </tr></table>
 
 ## Default variables:
-This role uses the `priming_staging_platform` variable for configuration parameters. See [defaults/main.yml](defaults/main.yml) for a comprehensive list of available options and their descriptions.<br>
+This role uses the `podman` variable for configuration parameters. See [defaults/main.yml](defaults/main.yml) for a comprehensive list of available options and their descriptions.<br>
 
 # Actions
 
