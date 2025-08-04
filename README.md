@@ -29,6 +29,59 @@ This role uses the `podman` variable for configuration parameters. See [defaults
 
 # Actions
 
+## Deployment
+
+action: **install**<br>
+Install basic version of RedHat Podman. Basic configuration.<br>
+variables:<br/>
+<kbd>uninstall</kbd> (optional) : true/false, uninstall Podman before installation.<br>
+<kbd>data_folder</kbd> (optional) : Local folder to store Podman data, default `/data`.<br>
+<kbd>service_user</kbd> (optional) :
+<kbd>service_group</kbd> (optional) : 
+
+```
+- name: Install and configure Podman
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : install
+       podman:
+         data_folder:  "\data" 
+         uninstall : true
+```
+
+action: **uninstall**<br>
+Uninstallation of RedHat Podman.<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+- name: Uninstall Podman
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : uninstall
+       keep_data: true
+```
+
+action: **update**<br>
+Update RedHat Podman to latest version.<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+- name: Update Podman to latest version
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : update
+```
+
+
+## Administration
 
 action: **configure**<br>
 Configure RedHat Podman.<br>
@@ -40,8 +93,156 @@ Configure RedHat Podman.<br>
   roles:
     - role: podman
       vars:
-        action: install
+        action: configure
 ```
+
+action: **start**<br>
+Start RedHat Podman service. `ROADMAP`<br>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **stop**<br/>
+Stop RedHat Podman service. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+
+```
+
+```
+
+action: **configure_vault**<br>
+Configure Vault for RedHat Podman.<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+- name: Configure Vault for Podman
+  hosts: localhost
+  roles:
+    - role: podman
+      vars:
+        action: configure_vault
+```
+
+
+## Containers
+
+action: **import_container**<br>
+Start Podman container.<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+<kbd>container_repository_url</kbd> : URL with location of container repository.<br>
+<kbd>container_name</kbd> : <br>
+<kbd>container_ports</kbd> : <br>
+<kbd>container_volumes</kbd> : <br>
+<kbd>container_env</kbd> : <br>
+
+```
+
+```
+
+action: **export_container**<br>
+Export Podman container. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **start_container**<br/>
+Start Podman container. `ROADMAP`<br>
+variables:<br/>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **stop_container**<br>
+Stop Podman container. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **restart_container**<br>
+Restart Podman container. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **update_container**<br>
+Update-upgrade Podman container. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+action: **run_container_command**<br>
+run command in Podman container. `ROADMAP`<br>
+variables:<br>
+<kbd>(none)</kbd> : No variables defined.<br>
+
+```
+
+```
+
+
+
+## Images
+
+action: **import_image**<br>
+Import Podman image to tarball.<br>
+variables:<br>
+<kbd>podman_repository_url</kbd> : URL with location of container repository.<br>
+<kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br>
+<kbd>podman_export_folder</kbd> Folder to export images, for example '/tmp/'.<br>
+
+```
+- name: Export Podman image
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : import_image
+       podman_repository_url: docker.io/hashicorp/vault
+       podman_export_folder: /data/export
+```
+
+
+action: **export_image**<br>
+Export Podman image to tarball.<br>
+variables:<br>
+<kbd>podman_repository_url</kbd> : URL with location of container repository.<br>
+<kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br>
+<kbd>podman_export_folder</kbd> Folder to export images, for example '/tmp/'.<br>
+
+```
+- name: Export Podman image
+  hosts: localhost
+  roles:
+   - role: podman
+     vars:
+       action : export_image
+       podman_repository_url: docker.io/hashicorp/vault
+       podman_export_folder: /data/export
+```
+
+
+
+## Volumes
 
 action: **copy_to_volume**<br>
 Copy data to container volume.<br>
@@ -75,129 +276,31 @@ Create container volume.<br>
 
 ```
 
-action: **export_container**<br>
-Export Podman container. `ROADMAP`<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
-
-```
-
-```
-
-action: **export_image**<br>
-Export Podman image to tarball.<br>
-variables:<br>
-<kbd>podman_repository_url</kbd> : URL with location of container repository.<br>
-<kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br>
-<kbd>podman_export_folder</kbd> Folder to export images, for example '/tmp/'.<br>
-
-```
-- name: Export Podman image
-  hosts: localhost
-  roles:
-   - role: podman
-     vars:
-       action : export_image
-       podman_repository_url: docker.io/hashicorp/vault
-       podman_export_folder: /data/export
-```
-
-action: **import_container**<br>
-Start Podman container.<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
-<kbd>container_repository_url</kbd> : URL with location of container repository.<br>
-<kbd>container_name</kbd> : <br>
-<kbd>container_ports</kbd> : <br>
-<kbd>container_volumes</kbd> : <br>
-<kbd>container_env</kbd> : <br>
-
-```
-
-```
 
 
-action: **install**<br>
-Install basic version of RedHat Podman. Basic configuration.<br>
-variables:<br/>
-<kbd>uninstall</kbd> (optional) : true/false, uninstall Podman before installation.<br>
-<kbd>podman_data_folder</kbd> (optional) : Local folder to store Podman data, default `/data`.<br>
-
-```
-- name: Install and configure Podman
-  hosts: localhost
-  roles:
-   - role: podman
-     vars:
-       action : install
-       uninstall : true
-```
-
-action: **start**<br>
-Start RedHat Podman service. `ROADMAP`<br>
-variables:<br/>
-<kbd>(none)</kbd> : No variables defined.<br>
-
-```
-
-```
 
 
-action: **start_container**<br/>
-Start Podman container. `ROADMAP`<br>
-variables:<br/>
-<kbd>(none)</kbd> : No variables defined.<br>
-
-```
-
-```
 
 
-action: **stop**<br/>
-Stop RedHat Podman service. `ROADMAP`<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
 
 
-```
 
-```
 
-action: **stop_container**<br>
-Stop Podman container. `ROADMAP`<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
 
-```
 
-```
 
-action: **uninstall**<br>
-Uninstallation of RedHat Podman.<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
 
-```
 
-```
 
-action: **update**<br>
-Update of RedHat Podman to latest version.<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
 
-```
 
-```
 
-action: **update_container**<br>
-Update-upgrade Podman container. `ROADMAP`<br>
-variables:<br>
-<kbd>(none)</kbd> : No variables defined.<br>
 
-```
 
-```
+
+
+
+
 
 ***
 
