@@ -48,6 +48,7 @@
       - podman
       - container-tools
       - container-selinux
+      - systemd-container
     state: present
   when: ansible_os_family == "RedHat"
 

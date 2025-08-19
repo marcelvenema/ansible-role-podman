@@ -47,6 +47,12 @@
         tag: "{{ podman_repository_tag }}"
       register: pull_result
 
+    # Delete file if present
+    - name: Delete file if present...
+      ansible.builtin.file:
+        path: "{{ podman_export_folder}}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar"
+        state: absent
+
     # Save image to tar file using shell command
     - name: "Save Podman image to tar file in folder {{ podman_export_folder }}..."
       ansible.builtin.shell: "podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ podman_repository_url }}:{{ podman_repository_tag }}"

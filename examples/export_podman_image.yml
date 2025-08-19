@@ -1,0 +1,32 @@
+---
+# Export container images to folder
+# This playbook will download container images from podman_repository_url and export the images to a folder.
+
+- name: Export containers images to folder
+  hosts: psp_vm
+  vars:
+
+  tasks:
+    # Information message
+    - name: Information message
+      ansible.builtin.debug:
+        msg:
+          - "#########################################################"
+          - "#########################################################"
+          - "Sync container images to repository"
+          - "#########################################################"
+          - "#########################################################"
+
+    # Pull images and export to folder
+    - name: Pull container images and export to folder...
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: "export_image"
+        podman_repository_url: "{{ item.podman_repository_url }}"
+        podman_repository_tag: "{{ item.podman_repository_tag }}"
+        podman_image_name    : "{{ item.podman_image_name }}"
+        podman_export_folder : "/tmp/exported_containers"
+      loop:
+        - { podman_repository_url: "docker.io/alpine/ansible", podman_repository_tag: "2.18.6", podman_image_name: "ansible" }
+        - { podman_repository_url: "docker.io/hashicorp/vault", podman_repository_tag: "1.20.1", podman_image_name: "vault" }

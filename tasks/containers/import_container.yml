@@ -4,28 +4,6 @@
 ## Podman Import Container module                      ##
 #########################################################
 
-# Register variables to facts when looped play
-- name: "Register container variables (looped)..."
-  ansible.builtin.set_fact:
-    container_repository_url: "{{ item.value.container_repository_url }}"
-    container_name: "{{ item.value.container_name }}"
-    container_repository_tag: "{{ item.value.container_repository_tag | default(omit) }}"
-    container_volumes: "{{ item.value.container_volumes }}"
-    container_quadlet_options: "{{ item.value.container_quadlet_options }}"
-    container_ports: "{{ item.value.container_ports | default(omit) }}"
-    container_env: "{{ item.value.container_env | default(omit) }}"
-    container_command: "{{ item.value.container_command| default(omit) }}"
-    container_security_opt: "{{ item.value.container_security_opt | default(omit) }}"
-    container_cap_add: "{{ item.value.container_cap_add | default(omit) }}"
-    container_healthcheck: "{{ item.value.container_healthcheck | default(omit) }}"
-    container_healthcheck_fail: "{{ item.value.container_healthcheck_fail | default('none') }}"
-    container_healtcheck_interval: "{{ item.value.container_healthcheck_interval | default(omit) }}"
-    container_healthcheck_retries: "{{ item.value.container_healthcheck_retries | default(omit) }}"
-    container_healthcheck_start: "{{ item.value.container_healthcheck_start | default(omit) }}"
-    container_healthcheck_timeout: "{{ item.value.container_healthcheck_timeout | default(omit) }}"
-  when:
-   - item.value.container_name is defined
-
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
@@ -278,85 +256,6 @@
   when: container_security_opt != "unset"
   register: container_create_result
 
-
-
-
-# Create podman container with security options
-#- name: "Create container {{ container_name }} (security_opt) with id {{ image_id }}..."
-#  become: true
-#  become_user: "{{ podman_service_user }}"
-#  containers.podman.podman_container:
-#    name: "{{ container_name }}"
-#    image: "{{ image_id }}"
-#    arch: "{{ container_arch | default(omit) }}"
-#    ports: "{{ container_ports | default(omit) }}"
-#    volumes: "{{ _container_volumes | default(omit) }}"
-#    command: "{{ container_command | default(omit) }}"
-#    restart_policy: always
-#    privileged: "{{ container_privileged | default(false) | bool }}"
-#    cap_add: "{{ container_cap_add | default(omit) }}"
-#    security_opt: "{{ container_security_opt | default(omit) }}"
-#    user: "{{ container_user | default(omit) }}"
-#    env: "{{ container_env | default(omit) }}"
-#  when: container_security_opt != "unset" and container_name != vault
-
-# # Add volume opttion U in case of rootless binded container volume on base filesystem
-# - name: Add rootless bind volume option
-#   become: true
-#   become_user: "{{ podman_vars.users.service_user }}"
-#   ansible.builtin.lineinfile:
-#     path: "~/.config/containers/systemd/container_{{ container_name }}.container"
-#     regex: 'Volume=(.*)$'
-#     line: 'Volume=\1,U'
-#     backrefs: true
-#   when: podman_bind_override
-
-
-##################################
-# Auto-start                     #
-##################################
-#- name: Generate container quadlet file...
-#  become: true
-#  become_user: "{{ podman_service_user }}"
-#  containers.podman.podman_container:
-#    name: "{{ container_name }}"
-#    state: quadlet
-#    image: "{{ image_id }}"
-#    arch: "{{ container_arch | default(omit) }}"
-#    ports: "{{ container_ports | default(omit) }}"
-##    volumes: "{{ container_volumes }}"
-#    volumes:
-#      - "{{ container_volumes.volume1 }}"
-#      - "{{ container_volumes.volume2 }}"
-#      - "{{ container_volumes.volume3 }}"
-#    command: "{{ container_command | default(omit) }}"
-#    privileged: "{{ container_privileged | default(false) | bool }}"
-#    cap_add: "{{ container_cap_add | default(omit) }}"
-#    security_opt: "{{ container_security_opt | default(omit) }}"
-#    user: "{{ container_user | default(omit) }}"
-#    env: "{{ container_env | default(omit) }}"
-#    quadlet_filename: "container_{{ container_name }}"
-#    quadlet_file_mode: '0640'
-#    quadlet_options:
-#      - "AutoUpdate=registry"
-#      - "Pull=newer"
-#      - |
-#        [Install]
-#        WantedBy=default.target
-#  when:
-#    - container_security_opt != "unset"
-#    -  not container_pod is defined
-
-# - name: Generate systemd unit file for container
-#   become: true
-#   become_user: "{{ podman_service_user }}"
-#   containers.podman.podman_generate_systemd:
-#     name: "{{ container_name }}"
-#     new: true
-#     no_header: true
-#     dest: ~/.config/systemd/user/
-
-
 - name: Retrieve userId to enable systemd user base...
   ansible.builtin.getent:
     database: passwd
@@ -378,25 +277,21 @@
   when:
    - container_pod is not defined
 
-# Container is part of a pod
-# Ensure pod is started and enabled
-# - name: Ensure pod is started and enabled...
-#   become: true
-#   become_user: "{{ podman_vars.service_user }}"
-#   ansible.builtin.systemd:
-#     name: "{{ container_pod | splitext | first }}.pod"
-#     daemon_reload: true
-#     state: started
-#     enabled: true
-#     scope: user
-#   environment:
-#     XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
-#   when:
-#    - container_pod is defined
-
 #########################################################
 ## Post-actions                                        ##
 #########################################################
+
+# Check if /tmp/{{ container_name }}.tar exists, then delete it
+- name: "Gather file information..."
+  ansible.builtin.stat:
+    path: "/tmp/{{ container_name }}.tar"
+  register: tmp_file
+
+- name: "Cleanup file /tmp/{{ container_name }}.tar..."
+  ansible.builtin.file:
+    path: "/tmp/{{ container_name }}.tar"
+    state: absent
+  when: tmp_file.stat.exists
 
 # Unset variables
 - name: Unset variables

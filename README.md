@@ -37,7 +37,7 @@ variables:<br/>
 <kbd>uninstall</kbd> (optional) : true/false, uninstall Podman before installation.<br>
 <kbd>data_folder</kbd> (optional) : Local folder to store Podman data, default `/data`.<br>
 <kbd>service_user</kbd> (optional) :
-<kbd>service_group</kbd> (optional) : 
+<kbd>service_group</kbd> (optional) :
 
 ```
 - name: Install and configure Podman
@@ -47,7 +47,7 @@ variables:<br/>
      vars:
        action : install
        podman:
-         data_folder:  "\data" 
+         data_folder:  "\data"
          uninstall : true
 ```
 
@@ -204,11 +204,11 @@ variables:<br>
 ## Images
 
 action: **import_image**<br>
-Import Podman image to tarball.<br>
+Import Podman image from tarball.<br>
 variables:<br>
 <kbd>podman_repository_url</kbd> : URL with location of container repository.<br>
 <kbd>podman_repository_tag</kbd> (optional) : release or version number of the container image. default is 'latest'.<br>
-<kbd>podman_export_folder</kbd> Folder to export images, for example '/tmp/'.<br>
+<kbd>podman_import_folder</kbd> Folder to import images, for example '/tmp/'.<br>
 
 ```
 - name: Export Podman image
@@ -218,7 +218,7 @@ variables:<br>
      vars:
        action : import_image
        podman_repository_url: docker.io/hashicorp/vault
-       podman_export_folder: /data/export
+       podman_import_folder: /data/import
 ```
 
 
