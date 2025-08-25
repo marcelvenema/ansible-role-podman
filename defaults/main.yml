@@ -15,6 +15,9 @@ podman:
   # token is the token used to authenticate to the Podman server.
   token: ""
 
+  # packages is a list of packages to be installed for Podman. example: ["podman", "podman-docker"].
+  packages: ["podman", "container-tools", "container-selinux", "systemd-container"]
+
   # metadata contains information about the role.
   metadata:
     name: "podman"

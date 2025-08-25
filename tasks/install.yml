@@ -44,22 +44,20 @@
 - name: Install Podman on RHEL platform...
   become: true
   ansible.builtin.package:
-    name:
-      - podman
-      - container-tools
-      - container-selinux
-      - systemd-container
+    name: "{{ item}}"
     state: present
   when: ansible_os_family == "RedHat"
+  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
 
 # Install Podman on server
 - name: Install Podman on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: podman
+    name: "{{ item }}"
     update_cache: yes
     state: present
   when: ansible_pkg_mgr == 'apt'
+  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
 
 # Start Podman on boot
 - name: Start Podman on server boot...
