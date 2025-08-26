@@ -44,7 +44,7 @@
 # Create user podman
 - name: Create Podman service user tasks...
   when: user_check.ansible_facts.getent_passwd is not defined
-  block: 
+  block:
 
     # Create user podman
     - name: "Create Podman service user ({{ podman_vars.service_user }})..."
@@ -91,6 +91,27 @@
       ansible.builtin.command: "loginctl enable-linger {{ podman_vars.service_user }}"
 
 #########################################################
+## Set podman default subnet pool                      ##
+#########################################################
+# Configure Podman default subnet pool, because Podman cannot create subnets when using
+# 10.0.0.0/8 networks.
+
+- name: "Set Podman default subnet pool to {{ podman_vars.default_subnet_pool }}..."
+  become: true
+  ansible.builtin.copy:
+    dest: /home/{{ podman_vars.service_user }}/.config/containers/containers.conf
+    mode: "0644"
+    force: yes        # do not overwrite an existing file
+    content: |
+      # Ansible-managed
+      [engine]
+      events_logger = "journald"
+
+      [network]
+      # Default subnet pool is 10.0.0.0/8
+      default_subnet_pools = [ { base = "{{ podman_vars.default_subnet_pool }}", size = 24 } ]
+
+#########################################################
 ## Data folder                                         ##
 #########################################################
 
@@ -123,4 +144,3 @@
 - name: Unset Podman service user and group variables
   ansible.builtin.set_fact:
     podman_service_user_password: ""
-   
