@@ -22,15 +22,9 @@
 # Pull container image, if failed try to use local file
 # local file can be http, https, ftp or local file
 
-# If tag is not defined, set value to latest
-- name: Register variable (container_repository_tag)
-  ansible.builtin.set_fact:
-    container_repository_tag: "latest"
-  when: container_repository_tag is not defined or container_repository_tag == ""
-
 # CONTAINER IMAGE REGISTRY
 # Get container image direct from registry
-- name: "Get container image from registry {{ container_repository_url }}:{{ container_repository_tag }}..."
+- name: "Get container image from registry {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}..."
   when: container_repository_url != "" and not container_repository_url.endswith(".tar")
   block:
 
@@ -41,17 +35,27 @@
 
     # Pull image from repository to local image repository. If failed, lookup local image file.
     # become is true to pull into system wide (root) storage
-    - name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag }}..."
+    - name: "Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}..."
       become: true
       become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.command:
-        cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag }}"
+        cmd: "podman pull {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}"
       register: pull_result
       ignore_errors: true
+
+    # Download container to /tmp/{{ container_name }}.tar when pull is succesfull 
+    - name: "Save container image to /tmp/{{ container_name }}.tar..."
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.command:
+        cmd: "podman save -o /tmp/{{ container_name }}.tar {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}"
+      when: pull_result.rc == 0
+      register: save_result
 
 # LOCAL CONTAINER IMAGE FILE
 # If local file, load image from local file
 - name: "Install local image file {{ container_repository_url }}..."
+  when: container_repository_url != "" and container_repository_url.endswith(".tar")
   block:
 
     # Show information message
@@ -87,92 +91,89 @@
         dest: "/tmp/{{ container_name }}.tar"
       when: ("http" in container_repository_url) or ("ftp" in container_repository_url) # https is included
 
-    # check if container file exists
-    - name: "Check if /tmp/{{ container_name }}.tar exists..."
+# CHECK IF CONTAINER IMAGE FILE EXISTS
+# Image file is saved to /tmp/{{ container_name }}.tar, check if exists
+- name: "Check if /tmp/{{ container_name }}.tar exists..."
+  ansible.builtin.stat:
+    path: "/tmp/{{ container_name }}.tar"
+  register: container_tar_result
+
+# Fail if image file not found
+- name: Fail if container image file not found...
+  ansible.builtin.fail:
+    msg: "Repository URL {{ container_repository_url }} not found. Container image file location not found. Cannot continue..."
+  when: container_tar_result.stat.exists == false
+
+#########################################################
+## Checksum container image                            ##
+#########################################################
+
+# If checksum is defined, check item
+# bug, check container_repository_checksum is not defined is not working
+- name: Parse checksum image
+  when: not (container_repository_checksum | string is search('__omit_place_holder__'))
+  block:
+
+    # If checksum contains :, split it in checksum and algorithm
+    - name: Split checksum and algorithm
+      ansible.builtin.set_fact:
+        repository_checksum: "{{ container_repository_checksum.split(':')[1] }}"
+        repository_checksum_algorithm: "{{ container_repository_checksum.split(':')[0] }}"
+      when: "':' in container_repository_checksum"
+
+    # Get checksum of container file.tar
+    - name: Get checksum of local container file
       ansible.builtin.stat:
         path: "/tmp/{{ container_name }}.tar"
-      register: container_tar_result
+        checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
+        get_checksum: yes
+      register: checksum_result
 
-    # Fail if image file not found
-    - name: Fail if container image file not found...
+    # Fail when checksum is not the same
+    - name: Fail when checksum is not correct
       ansible.builtin.fail:
-        msg: "Repository URL {{ container_repository_url }} not found. Container image file location not found. Cannot continue..."
-      when:
-        - container_tar_result.stat.exists == false
+        msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
+      when: checksum_result.stat.checksum != container_repository_checksum
 
-    ##################################
-    # Checksum image                 #
-    ##################################
+#########################################################
+## Load container image                                ##
+#########################################################
 
-    # If checksum is defined, check item
-    # bug, check container_repository_checksum is not defined is not working
-    - name: Parse checksum image
-      when: not (container_repository_checksum | string is search('__omit_place_holder__'))
-      block:
+# Load image from file if pull failed
+- name: "Import container image {{ container_name }} to podman..."
+  become: true
+  become_user: "{{ podman_vars.service_user }}"
+  ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
+  register: import_result
 
-        # If checksum contains :, split it in checksum and algorithm
-        - name: Split checksum and algorithm
-          ansible.builtin.set_fact:
-            repository_checksum: "{{ container_repository_checksum.split(':')[1] }}"
-            repository_checksum_algorithm: "{{ container_repository_checksum.split(':')[0] }}"
-          when:
-            - "':' in container_repository_checksum"
+# Set variable
+- name: Register variable (image_name)
+  ansible.builtin.set_fact:
+    image_name: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | first }}"
+    container_repository_tag: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | last  }}"
 
-        # Get checksum of container file.tar
-        - name: Get checksum of local container file
-          ansible.builtin.stat:
-            path: "/tmp/{{ container_name }}.tar"
-            checksum_algorithm: "{{ container_repository_checksum_algorithm }}"
-            get_checksum: yes
-          register: checksum_result
+# Get image info from podman
+- name: Gather info on container image (file)...
+  become: true
+  become_user: "{{ podman_vars.service_user }}"
+  ansible.builtin.command:
+    cmd: "podman image inspect {{ image_name }}"
+  register: images_info
 
-        # Fail when checksum is not the same
-        - name: Fail when checksum is not correct
-          ansible.builtin.fail:
-            msg: "Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum }}). Cannot continue..."
-          when:
-            - checksum_result.stat.checksum != container_repository_checksum
+# Find image id, do not use json_query as it is not installed on all systems
+- name: Find image id...
+  ansible.builtin.set_fact:
+    image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
 
-    ##################################
-    # Load image                     #
-    ##################################
-
-    # Load image from file if pull failed
-    - name: "Import container image {{ container_name }} to podman..."
-      become: true
-      become_user: "{{ podman_vars.service_user }}"
-      ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
-      register: import_result
-
-    # Set variable
-    - name: Register variable (image_name)
-      ansible.builtin.set_fact:
-        image_name: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | first }}"
-        container_repository_tag: "{{ import_result.stdout | regex_search('Loaded image:\\s*(.*)', '\\1') | last  }}"
-
-    # Get image info from podman
-    - name: Gather info on container image (file)...
-      become: true
-      become_user: "{{ podman_vars.service_user }}"
-      ansible.builtin.command:
-        cmd: "podman image inspect {{ image_name }}"
-      register: images_info
-
-    # Find image id, do not use json_query as it is not installed on all systems
-    - name: Find image id...
-      ansible.builtin.set_fact:
-        image_id: "{{ (images_info.stdout | from_json)[0]['Id'] }}"
-
-    # Set default quadlet options for static container images
-    - name: Register variable (container_quadlet_options)
-      ansible.builtin.set_fact:
-        container_quadlet_options:
-          - "Environment={{ container_env | default(omit) }}"
-          - |
-            [Install]
-            WantedBy=default.target
-      when:
-        - container_quadlet_options is not defined or container_quadlet_options == ""
+# Set default quadlet options for static container images
+- name: Register variable (container_quadlet_options)
+  ansible.builtin.set_fact:
+    container_quadlet_options:
+      - "Environment={{ container_env | default(omit) }}"
+      - |
+        [Install]
+        WantedBy=default.target
+  when: container_quadlet_options is not defined or container_quadlet_options == ""
 
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
