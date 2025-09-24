@@ -141,8 +141,8 @@
 
 # Load image from file if pull failed
 - name: "Import container image {{ container_name }} to podman..."
-  # become: true
-  # become_user: "{{ podman_vars.service_user }}"
+  become: true
+  become_user: "{{ podman_vars.service_user }}"
   ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
   register: import_result
 
