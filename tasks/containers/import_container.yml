@@ -43,7 +43,7 @@
       register: pull_result
       ignore_errors: true
 
-    # Download container to /tmp/{{ container_name }}.tar when pull is succesfull 
+    # Download container to /tmp/{{ container_name }}.tar when pull is succesfull
     - name: "Save container image to /tmp/{{ container_name }}.tar..."
       become: true
       become_user: "{{ podman_vars.service_user }}"
@@ -109,7 +109,7 @@
 #########################################################
 
 # If checksum is defined, check item
-# bug, check container_repository_checksum is not defined is not working
+# If container_repository_checksum is not defined, this block will be skipped.
 - name: Parse checksum image
   when: not (container_repository_checksum | string is search('__omit_place_holder__'))
   block:
@@ -141,8 +141,8 @@
 
 # Load image from file if pull failed
 - name: "Import container image {{ container_name }} to podman..."
-  become: true
-  become_user: "{{ podman_vars.service_user }}"
+  # become: true
+  # become_user: "{{ podman_vars.service_user }}"
   ansible.builtin.command: "podman load -i /tmp/{{ container_name }}.tar"
   register: import_result
 
@@ -185,7 +185,7 @@
 ##################################
 
 # Set variable if not defined
-- name: Register variable (container_priviledged)...
+- name: Register variable (container_privileged)...
   ansible.builtin.set_fact:
     container_privileged: false
   when: container_privileged is not defined or container_privileged is none or container_privileged == ""
@@ -212,7 +212,7 @@
     command: "{{ container_command | default(omit) }}"
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
-    user: "{{ container_user | default (omit) }}"
+    user: "{{ container_user | default(omit) }}"
     healthcheck: "{{ container_healthcheck | default(omit) }}"
     healthcheck_failure_action: "{{ container_healthcheck_fail | default('none') }}"
     healthcheck_retries: "{{ container_healthcheck_retries | default(omit) }}"
@@ -238,7 +238,7 @@
     state: quadlet
     arch: "{{ container_arch | default(omit) }}"
     ports: "{{ container_ports | default(omit) }}"
-    volumes: "{{ _container_volumes }}"
+    volumes: "{{ _container_volumes | default(omit) }}"
     command: "{{ container_command | default(omit) }}"
     privileged: "{{ container_privileged | default(false) | bool }}"
     cap_add: "{{ container_cap_add | default(omit) }}"
