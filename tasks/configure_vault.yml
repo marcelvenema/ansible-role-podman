@@ -34,7 +34,7 @@
 # Create secret engine
 - name: Create secret engine...
   ansible.builtin.include_role:
-    name: vault
+    name: openbao
   vars:
     action: create_secret_engine
     secret_engine_name: "{{ _secret_engine_name }}"
@@ -70,10 +70,10 @@
 ## Store secrets                                       ##
 #########################################################
 
-# Store usernames and passwords in Hashicorp Vault.
+# Store usernames and passwords in OpenBao Vault.
 - name: "Store {{ ansible_fqdn }} usernames and passwords in Vault"
   ansible.builtin.include_role:
-    name: vault
+    name: openbao
   vars:
     action: create_secret
     secret_engine_name: "{{ _secret_engine_name }}"

@@ -112,7 +112,7 @@
 - name: restart Podman container...
   when: action == "restart_container"
   block:
- 
+
     # Fetch proper userID for user based D-bus interaction
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
@@ -128,13 +128,13 @@
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"   
+        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
       register: restart_result
 
     # Check result
     - name: " Show restart result..."
       debug:
-        msg: "Restarted container ({{ container_name }}) with result {{ restart_result.Result }}"     
+        msg: "Restarted container ({{ container_name }}) with result {{ restart_result.Result }}"
 
 #########################################################
 ## Update container                                    ##
@@ -173,10 +173,43 @@
       ansible.builtin.meta: end_play
 
 #########################################################
+## Get containers                                    ##
+#########################################################
+# Get list of all containers and return it in a variable.
+# Filter based on container name. Result is returned in variable defined in 'result_var' variable.
+
+# Get containers
+- name: Get containers...
+  when: action == "get_containers"
+  block:
+
+    # Validate required variables
+    - name: Validate required variables for action...
+      ansible.builtin.assert:
+        that: 'item is defined'
+        fail_msg: "Required variable '{{ item }}' has not been provided."
+        quiet: true
+      with_items:
+        - container_name
+        - result_var
+
+    # List containers from podman
+    - name: Gather containers from podman...
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.shell: "podman ps --all --filter name={{ container_name }}"
+      register: podman_containers
+
+    # Set set_fact:
+    - name: Set set_fact...
+      ansible.builtin.set_fact:
+        "{{ result_var }}": "{{ podman_containers.stdout_lines }}"
+
+#########################################################
 ## Post-actions                                        ##
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-#    <variable>: null
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    podman_containers: null

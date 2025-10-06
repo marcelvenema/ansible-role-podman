@@ -16,7 +16,7 @@ podman:
   token: ""
 
   # packages is a list of packages to be installed for Podman. example: ["podman", "podman-docker"].
-  packages: ["podman", "container-selinux", "systemd-container", "acl"]
+  rpm_packages: ["podman", "container-selinux", "systemd-container", "acl"]
 
   # metadata contains information about the role.
   metadata:

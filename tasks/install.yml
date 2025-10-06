@@ -40,24 +40,21 @@
 ## Installation                                        ##
 #########################################################
 
-# Install Podman on server
-- name: Install Podman on RHEL platform...
+# Install Podman packages on RHEL
+- name: Install Podman packages on RHEL platform...
   become: true
   ansible.builtin.package:
-    name: "{{ item}}"
+    name: "{{ podman_vars.rpm_packages }}"
     state: present
   when: ansible_os_family == "RedHat"
-  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
 
-# Install Podman on server
-- name: Install Podman on Ubuntu platform...
+# Install Podman packages on Ubuntu
+- name: Install Podman packages on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: "{{ item }}"
-    update_cache: yes
+    name: "{{ podman_vars.rpm_packages}}"
     state: present
   when: ansible_pkg_mgr == 'apt'
-  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
 
 # Start Podman on boot
 - name: Start Podman on server boot...

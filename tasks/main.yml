@@ -38,7 +38,7 @@
 - name: Publish message to Kafka bus...
   ansible.builtin.debug:
     msg: "TODO: Publish message to Kafka bus..."
-  when: kafka_bootstrap_servers is defined 
+  when: kafka_bootstrap_servers is defined
 
 # -------------------------------------------------------
 # Default actions
@@ -88,13 +88,17 @@
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "export_container"
 
+- name: Start import_container action...
+  ansible.builtin.include_tasks: containers/import_container.yml
+  when: action == "import_container"
+
 - name: Start run_container_command action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "run_container_command"
 
-- name: Start import_container action...
-  ansible.builtin.include_tasks: containers/import_container.yml
-  when: action == "import_container"
+- name: Start get_containers action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "get_containers"
 
 # -------------------------------------------------------
 # Networks actions

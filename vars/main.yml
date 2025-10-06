@@ -1,231 +1,267 @@
 ---
 
 actions:
-  - start:
-      description: "Start Podman service."
-      icon: "media/icon_podman.png"
+    - start:
+          description: "Start Podman service."
+          icon: "media/icon_podman.png"
+          category: "administration"
 
-  - stop:
-      description: "Stop Podman service."
-      icon: "media/icon_podman.png"
+    - stop:
+          description: "Stop Podman service."
+          icon: "media/icon_podman.png"
+          category: "administration"
 
-  - install:
-      description: "Installation and configuration of the latest version of RedHat Podman."
-      icon: "media/icon_podman.png"
-      parameters:
-        - uninstall:
-            description: "Uninstallation of RedHat Podman. Removes the container, files, users, and groups."
-            icon: "media/icon_podman.png"
-            required: false
-        - podman_data_folder:
-            description: "Local folder for storing Podman container data. Default is /data."
-            icon: "media/icon_podman.png"
-            required: false
+    - install:
+          description: "Installation and configuration of the latest version of RedHat Podman."
+          icon: "media/icon_podman.png"
+          category: "deployment"
+          parameters:
+              - uninstall:
+                    description: "Uninstallation of RedHat Podman. Removes the container, files, users, and groups."
+                    icon: "media/icon_podman.png"
+                    required: false
+              - podman_data_folder:
+                    description: "Local folder for storing Podman container data. Default is /data."
+                    icon: "media/icon_podman.png"
+                    required: false
 
-  - uninstall:
-      description: "Uninstallation of RedHat Podman. Removes containers, files, users, and groups."
-      icon: "media/icon_podman.png"
-      parameters:
-        - podman_data_folder:
-            description: "Local folder for storing Podman container data. Default is /data."
-            icon: "media/icon_podman.png"
-            required: false
+    - uninstall:
+          description: "Uninstallation of RedHat Podman. Removes containers, files, users, and groups."
+          icon: "media/icon_podman.png"
+          category: "deployment"
+          parameters:
+              - podman_data_folder:
+                    description: "Local folder for storing Podman container data. Default is /data."
+                    icon: "media/icon_podman.png"
+                    required: false
 
-  - configure:
-      description: "Configure RedHat Podman. Create users and groups."
-      icon: "media/icon_podman.png"
-      parameters:
-        - podman_data_folder:
-            description: "Local folder for storing Podman container data. Default is /data."
-            icon: "media/icon_podman.png"
-            required: false
+    - configure:
+          description: "Configure RedHat Podman. Create users and groups."
+          icon: "media/icon_podman.png"
+          category: "deployment"
+          parameters:
+              - podman_data_folder:
+                    description: "Local folder for storing Podman container data. Default is /data."
+                    icon: "media/icon_podman.png"
+                    required: false
 
-  - configure_vault:
-      description: "Configure Hashicorp Vault secrets for Podman if Vault is present."
-      icon: "media/icon_podman.png"
-      parameters:
-        - vault_address:
-            description: "Vault address."
-            icon: "media/icon_podman.png"
-            required: true
-        - vault_token:
-            description: "Vault token."
-            icon: "media/icon_podman.png"
-            required: true
+    - configure_vault:
+          description: "Configure Hashicorp Vault secrets for Podman if Vault is present."
+          icon: "media/icon_podman.png"
+          category: "deployment"
+          parameters:
+              - vault_address:
+                    description: "Vault address."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - vault_token:
+                    description: "Vault token."
+                    icon: "media/icon_podman.png"
+                    required: true
 
-  - update:
-      description: "Update Podman to the latest version."
-      icon: "media/icon_podman.png"
+    - update:
+          description: "Update Podman to the latest version."
+          icon: "media/icon_podman.png"
+          category: "deployment"
 
 # -------------------------------------------------------
 # Podman containers
-  - start_container:
-      description: "Start container."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
 
-  - stop_container:
-      description: "Stop container."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
+    - start_container:
+          description: "Start container."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                    description: "Name of the container."
+                    icon: "media/icon_podman.png"
+                    required: true
 
-  - restart_container:
-      description: "Restart container."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
+    - stop_container:
+          description: "Stop container."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                    description: "Name of the container."
+                    icon: "media/icon_podman.png"
+                    required: true
 
-  - export_container:
-      description: "Export container to tarball."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
+    - restart_container:
+          description: "Restart container."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                description: "Name of the container."
+                icon: "media/icon_podman.png"
+                required: true
 
-  - import_container:
-      description: "Install container."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
-        - container_tag:
-            description: "Tag of the container."
-            icon: "media/icon_podman.png"
-            required: false
+    - export_container:
+          description: "Export container to tarball."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                description: "Name of the container."
+                icon: "media/icon_podman.png"
+                required: true
 
-  - run_container_command:
-      description: "Run command in container."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_name:
-            description: "Name of the container."
-            icon: "media/icon_podman.png"
-            required: true
-        - container_command:
-            description: "Command to run in the container."
-            icon: "media/icon_podman.png"
-            required: true
+    - import_container:
+          description: "Install container."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                    description: "Name of the container."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - container_tag:
+                    description: "Tag of the container."
+                    icon: "media/icon_podman.png"
+                    required: false
 
-  - create_network:
-      description: "Create network(s) for container communication."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_network:
-            description: "Name of the network to create."
-            icon: "media/icon_podman.png"
-            required: true
-        - container_network_subnet:
-            description: "Subnet for the network."
-            icon: "media/icon_podman.png"
-            required: false
-        - container_network_gateway:
-            description: "Gateway for the network."
-            icon: "media/icon_podman.png"
-            required: false
+    - run_container_command:
+          description: "Run command in container."
+          icon: "media/icon_podman.png"
+          category: "container management"
+          parameters:
+              - container_name:
+                    description: "Name of the container."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - container_command:
+                    description: "Command to run in the container."
+                    icon: "media/icon_podman.png"
+                    required: true
 
-  - destroy_network:
-      description: "Remove network(s) for container communication."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_network:
-            description: "Name of the network to remove."
-            icon: "media/icon_podman.png"
-            required: true
-
-  - create_pod:
-      description: "Create pod for container grouping."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_pod:
-            description: "Name of the pod to create."
-            icon: "media/icon_podman.png"
-            required: true
-        - container_ports:
-            description: "Ports to expose for the pod."
-            icon: "media/icon_podman.png"
-            required: false
-
-  - destroy_pod:
-      description: "Remove pod for container grouping."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_pod:
-            description: "Name of the pod to remove."
-            icon: "media/icon_podman.png"
-            required: true
-
-  - restart_pod:
-      description: "Restart pod."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_pod:
-            description: "Name of the pod to restart."
-            icon: "media/icon_podman.png"
-            required: true
+    - get_containers:
+          description: "Get list of containers."
+          icon: "media/icon_podman.png"
+          category: "container management"
 
 # -------------------------------------------------------
-# Podman Images
-  - export_image:
-      description: "Export image to tarball."
-      icon: "media/icon_podman.png"
-      parameters:
-        - podman_image_name:
-            description: "Name of the Podman image to export."
-            icon: "media/icon_podman.png"
-            required: true
-        - podman_export_folder:
-            description: "Folder to export the image to."
-            icon: "media/icon_podman.png"
-            required: true
+# Podman networks
 
-  - import_image:
-      description: "Import image from tarball."
-      icon: "media/icon_podman.png"
-      parameters:
-        - podman_image_file:
-            description: "Path to the tarball containing the image."
-            icon: "media/icon_podman.png"
-            required: true
+    - create_network:
+          description: "Create network(s) for container communication."
+          icon: "media/icon_podman.png"
+          category: "network management"
+          parameters:
+              - container_network:
+                    description: "Name of the network to create."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - container_network_subnet:
+                    description: "Subnet for the network."
+                    icon: "media/icon_podman.png"
+                    required: false
+              - container_network_gateway:
+                    description: "Gateway for the network."
+                    icon: "media/icon_podman.png"
+                    required: false
+
+    - destroy_network:
+          description: "Remove network(s) for container communication."
+          icon: "media/icon_podman.png"
+          parameters:
+              - container_network:
+                description: "Name of the network to remove."
+                icon: "media/icon_podman.png"
+                required: true
+
 # -------------------------------------------------------
-# Podman Volumes
-  - create_volumes:
-      description: "Create volume(s) for container storage."
-      icon: "media/icon_podman.png"
-      parameters:
-        - container_volumes:
-          description: "Array of volumes and mappings."
-          icon: "media/icon_podman.png"
-          required: true
-        - volume_owner:
-          description: "Owner of volume files."
-          icon: "media/icon_podman.png"
-          required: false
+# Podman pods
 
-  - destroy_volumes:
-    description: "Remove volume(s) for container storage."
-    icon: "media/icon_podman.png"
-    parameters:
-      - container_volumes:
-        description: "Array of volumes and mappings."
-        icon: "media/icon_podman.png"
-        required: true
+    - create_pod:
+          description: "Create pod for container grouping."
+          icon: "media/icon_podman.png"
+          category: "pod management"
+          parameters:
+              - container_pod:
+                    description: "Name of the pod to create."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - container_ports:
+                    description: "Ports to expose for the pod."
+                    icon: "media/icon_podman.png"
+                    required: false
 
-  - copy_to_volume:
-    description: "Copy files to volume."
-    icon: "media/icon_podman.png"
+    - destroy_pod:
+          description: "Remove pod for container grouping."
+          icon: "media/icon_podman.png"
+          category: "pod management"
+          parameters:
+              - container_pod:
+                    description: "Name of the pod to remove."
+                    icon: "media/icon_podman.png"
+                    required: true
+
+    - restart_pod:
+          description: "Restart pod."
+          icon: "media/icon_podman.png"
+          category: "pod management"
+          parameters:
+              - container_pod:
+                    description: "Name of the pod to restart."
+                    icon: "media/icon_podman.png"
+                    required: true
+
+# -------------------------------------------------------
+# Podman images
+
+    - export_image:
+          description: "Export image to tarball."
+          icon: "media/icon_podman.png"
+          category: "image management"
+          parameters:
+              - podman_image_name:
+                    description: "Name of the Podman image to export."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - podman_export_folder:
+                    description: "Folder to export the image to."
+                    icon: "media/icon_podman.png"
+                    required: true
+
+    - import_image:
+          description: "Import image from tarball."
+          icon: "media/icon_podman.png"
+          category: "image management"
+          parameters:
+              - podman_image_file:
+                    description: "Path to the tarball containing the image."
+                    icon: "media/icon_podman.png"
+                    required: true
+# -------------------------------------------------------
+# Podman volumes
+
+    - create_volumes:
+          description: "Create volume(s) for container storage."
+          icon: "media/icon_podman.png"
+          category: "volume management"
+          parameters:
+              - container_volumes:
+                    description: "Array of volumes and mappings."
+                    icon: "media/icon_podman.png"
+                    required: true
+              - volume_owner:
+                    description: "Owner of volume files."
+                    icon: "media/icon_podman.png"
+                    required: false
+
+    - destroy_volumes:
+          description: "Remove volume(s) for container storage."
+          icon: "media/icon_podman.png"
+          category: "volume management"
+          parameters:
+              - container_volumes:
+                    description: "Array of volumes and mappings."
+                    icon: "media/icon_podman.png"
+                    required: true
+
+    - copy_to_volume:
+          description: "Copy files to volume."
+          icon: "media/icon_podman.png"
+          category: "volume management"
 # -------------------------------------------------------
