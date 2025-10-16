@@ -1,9 +1,8 @@
 ---
 
 dependencies: []
-
 galaxy_info:
-  author: "Marcel Venema"
+  author: Marcel Venema
   description: Ansible role for Podman
   company: ""
   license: MIT

@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Set action                                          ##
 #########################################################
@@ -12,23 +11,21 @@
   ansible.builtin.package_facts:
     manager: auto
 
-# Check if podman service is running
-- name: Gather status Podman service...
-  ansible.builtin.systemd:
-    name: podman.socket
-  register: podman_service_status
-  changed_when: false
-  failed_when: false
-  ignore_errors: true
+# Gather service facts
+- name: Gather service facts...
+  ansible.builtin.service_facts:
+  register: _service_facts
 
 # Set action variable when service is not running
 - name: Register variable (action)...
-  set_fact:
-    action: "start"
-  when: podman_service_status.status != 'running'
+  ansible.builtin.set_fact:
+    action: start
+  when:
+    - ( ('podman.socket' in ansible_facts.services) and (ansible_facts.services['podman.socket'].state is defined) and 
+      (ansible_facts.services['podman.socket'].state != 'running') )
 
 # Set action to install if podman is not installed
 - name: Register variable (action)...
-  set_fact:
-    action: "install"
+  ansible.builtin.set_fact:
+    action: install
   when: "'podman' not in ansible_facts.packages"

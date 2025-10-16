@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Vault module for Podman                             ##
 #########################################################
@@ -10,8 +9,8 @@
 # Validate variables
 - name: Validate required variables for action.
   ansible.builtin.assert:
-    that: "item is defined"
-    fail_msg: "Required variable '{{ item }}' has not been provided."
+    that: item is defined
+    fail_msg: Required variable '{{ item }}' has not been provided.
     quiet: true
   with_items:
     - vault_address
@@ -20,12 +19,12 @@
 # Register variable (_secret_engine_name)
 - name: Register variable (secret_engine_name)...
   ansible.builtin.set_fact:
-   _secret_engine_name: "{{ podman_vars.secrets.secret_engine_name | default('devices') }}"
+    _secret_engine_name: "{{ podman_vars.secrets.secret_engine_name | default('devices') }}"
 
 # Register variable (_secret_name)
 - name: Register variable (secret_name)...
   ansible.builtin.set_fact:
-    _secret_name: "{{ podman_vars.secrets.vault_id | default( ansible_fqdn | replace('.', '-')) }}"
+    _secret_name: "{{ podman_vars.secrets.secret_name | default(ansible_fqdn | replace('.', '-')) }}"
 
 #########################################################
 ## Secret Engine (devices)                             ##
@@ -39,7 +38,7 @@
     action: create_secret_engine
     secret_engine_name: "{{ _secret_engine_name }}"
     secret_engine_description: "{{ podman_vars.secrets.secret_engine_description | default('Secrets for devices') }}"
-    secret_engine_type: "kv"
+    secret_engine_type: kv
 
 #########################################################
 ## Secrets (podman.service_user)                       ##
@@ -59,19 +58,19 @@
   when: podman_vars.service_user is defined
 
 # Change password on OS for user podman_service_user
-- name: "Change password for user {{ podman_vars.service_user }}..."
+- name: Change password for user {{ podman_vars.service_user }}...
   become: true
   ansible.builtin.user:
     name: "{{ podman_vars.service_user }}"
-    password: "{{ podman_service_password | password_hash('sha512') }}"
-  when: podman_vars.service_user is defined and podman_service_password is defined
+    password: "{{ podman_vars.service_user_password | password_hash('sha512') }}"
+  when: podman_vars.service_user is defined and podman_vars.service_user_password is defined
 
 #########################################################
 ## Store secrets                                       ##
 #########################################################
 
 # Store usernames and passwords in OpenBao Vault.
-- name: "Store {{ ansible_fqdn }} usernames and passwords in Vault"
+- name: Store usernames and passwords in Vault
   ansible.builtin.include_role:
     name: openbao
   vars:
@@ -87,7 +86,6 @@
 # Unset variables
 - name: Unset variables...
   ansible.builtin.set_fact:
-    _secret_engine_name: null
-    _secret_name: null
-    _secret_keyvalue: null
-    podman_vars.service_user_password: null
+    _secret_engine_name:
+    _secret_name:
+    _secret_keyvalue:

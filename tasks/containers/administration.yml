@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Podman Container administration module              ##
 #########################################################
@@ -7,8 +6,8 @@
 # Validate global variables.
 - name: Validate variables for Podman containers module...
   ansible.builtin.assert:
-    that: "varitem is defined"
-    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    that: varitem is defined
+    fail_msg: Required variable '{{ varitem }}' has not been provided.
     quiet: true
   loop_control:
     loop_var: varitem
@@ -23,12 +22,11 @@
 - name: Start Podman container...
   when: action == "run_container_command"
   block:
-
     # Validate required variables
     - name: Validate required variables for action...
       ansible.builtin.assert:
-        that: 'item is defined'
-        fail_msg: "Required variable '{{ item }}' has not been provided."
+        that: item is defined
+        fail_msg: Required variable '{{ item }}' has not been provided.
         quiet: true
       with_items:
         - container_command
@@ -65,7 +63,6 @@
 - name: Start Podman container...
   when: action == "start_container"
   block:
-
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
@@ -73,18 +70,17 @@
 
     # Container is not part of a pod
     # Ensure container is started and enabled
-    - name: "Ensure container {{ container_name }} is started and enabled..."
+    - name: Start container ({{ container_name }})...
       become: true
       become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.systemd:
-        name: "container_{{ container_name }}"
+        name: container_{{ container_name }}
         daemon_reload: true
         state: started
         enabled: true
         scope: user
       environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
-
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
 
 #########################################################
 ## Stop container                                      ##
@@ -94,25 +90,30 @@
 - name: Stop Podman container...
   when: action == "stop_container"
   block:
+    - name: Retrieve userId to enable systemd user base...
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ podman_vars.service_user }}"
 
-    # Show information message
-    - name: "This part is not (yet) implemented."
-      ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
-
-    # Stop playbook
-    - name: Stop playbook
-      ansible.builtin.meta: end_play
+    # Stop via systemd (quadlet-managed)
+    - name: Stop container ({{ container_name }})...
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      ansible.builtin.systemd:
+        name: container_{{ container_name }}
+        state: stopped
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
 
 #########################################################
 ## Restart container                                   ##
 #########################################################
 
 # Restart container
-- name: restart Podman container...
+- name: Restart Podman container...
   when: action == "restart_container"
   block:
-
     # Fetch proper userID for user based D-bus interaction
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
@@ -120,21 +121,21 @@
         key: "{{ podman_vars.service_user }}"
 
     # Restart container through systemd
-    - name: "Restart container ({{ container_name }})..."
+    - name: Restart container ({{ container_name }})...
       become: true
       become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.systemd:
-        name: "container_{{ container_name }}"
+        name: container_{{ container_name }}
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
       register: restart_result
 
     # Check result
     - name: " Show restart result..."
-      debug:
-        msg: "Restarted container ({{ container_name }}) with result {{ restart_result.Result }}"
+      ansible.builtin.debug:
+        msg: Restarted container ({{ container_name }}) with result {{ restart_result.Result }}
 
 #########################################################
 ## Update container                                    ##
@@ -144,11 +145,10 @@
 - name: Update Podman container...
   when: action == "update_container"
   block:
-
     # Show information message
-    - name: "This part is not (yet) implemented."
+    - name: This part is not (yet) implemented.
       ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
+        msg: This part is not (yet) implemented.
 
     # Stop playbook
     - name: Stop playbook
@@ -162,11 +162,10 @@
 - name: Export Podman container...
   when: action == "export_container"
   block:
-
     # Show information message
-    - name: "This part is not (yet) implemented."
+    - name: This part is not (yet) implemented.
       ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
+        msg: This part is not (yet) implemented.
 
     # Stop playbook
     - name: Stop playbook
@@ -182,12 +181,11 @@
 - name: Get containers...
   when: action == "get_containers"
   block:
-
     # Validate required variables
     - name: Validate required variables for action...
       ansible.builtin.assert:
-        that: 'item is defined'
-        fail_msg: "Required variable '{{ item }}' has not been provided."
+        that: item is defined
+        fail_msg: Required variable '{{ item }}' has not been provided.
         quiet: true
       with_items:
         - container_name
@@ -197,7 +195,7 @@
     - name: Gather containers from podman...
       become: true
       become_user: "{{ podman_vars.service_user }}"
-      ansible.builtin.shell: "podman ps --all --filter name={{ container_name }}"
+      ansible.builtin.command: podman ps --all --filter name={{ container_name }}
       register: podman_containers
 
     # Set set_fact:
@@ -206,10 +204,81 @@
         "{{ result_var }}": "{{ podman_containers.stdout_lines }}"
 
 #########################################################
+## Delete container                                    ##
+#########################################################
+# Delete container.
+
+# Delete container
+- name: Delete container...
+  when: action == "delete_container"
+  block:
+    # Validate required variables
+    - name: Validate required variables for action...
+      ansible.builtin.assert:
+        that: item is defined
+        fail_msg: Required variable '{{ item }}' has not been provided.
+        quiet: true
+      with_items:
+        - result_var
+
+    # Delete container using podman collection
+    - name: Delete container ({{ container_name }})...
+      become: true
+      become_user: "{{ podman_vars.service_user }}"
+      containers.podman.podman_container:
+        name: "{{ container_name }}"
+        state: absent
+        force: true
+      register: delete_result
+
+    # Check result
+    - name: " Show delete result..."
+      ansible.builtin.debug:
+        msg: Deleted container ({{ container_name }}) with result {{ delete_result.Result }}
+
+    # Set set_fact:
+    - name: Set set_fact...
+      ansible.builtin.set_fact:
+        "{{ result_var }}": "{{ delete_result.Result }}"
+
+#########################################################
+## Get logs from container                             ##
+#########################################################
+# Get logs from container.
+
+# Get logs from container
+- name: Get logs from container ({{ container_name }})...
+  when: action == "get_logs"
+  block:
+    # Validate required variables
+    - name: Validate required variables for action...
+      ansible.builtin.assert:
+        that: item is defined
+        fail_msg: Required variable '{{ item }}' has not been provided.
+        quiet: true
+      with_items:
+        - result_var
+
+    # Get logs from container
+    - name: Get logs from frigate container
+      ansible.builtin.command: podman logs {{ container_name }}
+      register: logs_result
+
+    # Show logs result
+    - name: " Show logs result..."
+      ansible.builtin.debug:
+        msg: "{{ logs_result.stdout_lines }}"
+
+    # Set set_fact:
+    - name: Set set_fact...
+      ansible.builtin.set_fact:
+        "{{ result_var }}": "{{ logs_result.stdout_lines }}"
+
+#########################################################
 ## Post-actions                                        ##
 #########################################################
 
 # Unset variables
 - name: Unset variables...
   ansible.builtin.set_fact:
-    podman_containers: null
+    podman_containers:

@@ -1,44 +1,43 @@
 ---
-
 #########################################################
 ## Main module for Podman ansible role                 ##
 #########################################################
 
-# Show message
-- name: Show action message
-  debug:
-    msg: "Starting role {{ role_name }}... action: {{ action }}."
+# Merge role defaults with vault, include nested variables
+# Nested merge does not work well, so use workaround to combine variables
+- name: Gather defaults (podman)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: podman_defaults
+
+# Merge role defaults, include nested variables
+- name: Register variables (podman)...
+  ansible.builtin.set_fact:
+    podman_vars: "{{ podman_defaults.podman | combine(podman | default({}), recursive=True) }}"
 
 # If action variable is not defined, gather status of the service and set action variable
 - name: Gather action variable status...
   ansible.builtin.include_tasks: set_action.yml
   when: action is not defined
 
+# Show message
+- name: Show action message
+  ansible.builtin.debug:
+    msg: "Starting role {{ role_name }}... action: {{ action }}."
+
 # Assert that action is in actions
-- name: "Verify valid action ({{ action }})..."
+- name: Verify valid action ({{ action }})...
   ansible.builtin.assert:
     that:
       - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
-    fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
+    fail_msg: The action '{{ action }}' is not in the list of valid actions...
     quiet: true
-
-# Get defaults for the role
-- name: Gather variables (podman)...
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/defaults/main.yml"
-    name: podman_defaults
-
-# Set variables for the role
-- name: Register variables (podman)...
-  ansible.builtin.set_fact:
-    podman_vars: "{{ podman_defaults.podman | combine( podman | default({}), recursive=True) }}"
-  when: podman is defined
 
 # TODO: Send message to Kafka bus
 - name: Publish message to Kafka bus...
   ansible.builtin.debug:
     msg: "TODO: Publish message to Kafka bus..."
-  when: kafka_bootstrap_servers is defined
+  when: kafka_bootstrap_servers is defined and kafka_bootstrap_servers | length > 0
 
 # -------------------------------------------------------
 # Default actions
@@ -57,6 +56,10 @@
 - name: Start update action...
   ansible.builtin.include_tasks: administration.yml
   when: action == "update"
+
+- name: Start configure_vault action...
+  ansible.builtin.include_tasks: configure_vault.yml
+  when: action == "configure_vault"
 
 - name: Start start action...
   ansible.builtin.include_tasks: administration.yml
@@ -84,6 +87,10 @@
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "update_container"
 
+- name: Start delete_container action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "delete_container"
+
 - name: Start export_container action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "export_container"
@@ -99,6 +106,10 @@
 - name: Start get_containers action...
   ansible.builtin.include_tasks: containers/administration.yml
   when: action == "get_containers"
+
+- name: Start get_logs action...
+  ansible.builtin.include_tasks: containers/administration.yml
+  when: action == "get_logs"
 
 # -------------------------------------------------------
 # Networks actions

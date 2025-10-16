@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Podman Server Administration module                 ##
 #########################################################
@@ -21,13 +20,12 @@
 - name: Start Podman service
   when: action == 'start'
   block:
-
     # Start podman service
     - name: Start Podman service...
       ansible.builtin.systemd:
-        name: "podman"
+        name: podman
         state: started
-        enabled: yes
+        enabled: true
 
 #########################################################
 ## Stop Podman service                                 ##
@@ -37,13 +35,12 @@
 - name: Stop Podman service
   when: action == 'stop'
   block:
-
     # Stop podman service
     - name: Stop Podman service...
       ansible.builtin.systemd:
-        name: "podman"
+        name: podman
         state: stopped
-        enabled: no
+        enabled: false
 
 #########################################################
 ## Update Podman                                       ##
@@ -53,12 +50,11 @@
 - name: Update Podman service
   when: action == 'update'
   block:
-
     # Update Podman package
     - name: Update Podman package...
       become: true
       ansible.builtin.package:
-        name: "podman"
+        name: podman
         state: latest
 
 #########################################################
@@ -66,6 +62,6 @@
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-#    <variable>: null
+# - name: Unset variables...
+#   ansible.builtin.set_fact:
+#     <variable>: null

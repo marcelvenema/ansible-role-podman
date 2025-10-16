@@ -1,4 +1,4 @@
-
+---
 #########################################################
 ## Podman Images module                                ##
 #########################################################
@@ -6,8 +6,8 @@
 # Validate global variables.
 - name: Validate variables for Podman images module...
   ansible.builtin.assert:
-    that: "varitem is defined"
-    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    that: varitem is defined
+    fail_msg: Required variable '{{ varitem }}' has not been provided.
     quiet: true
   loop_control:
     loop_var: varitem
@@ -22,26 +22,26 @@
 - name: Export Podman image...
   when: action == "export_image"
   block:
-
     # Ensure export folder is present
     - name: Assert podman_export_folder is present...
+      become: true
       ansible.builtin.file:
         path: "{{ podman_export_folder }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     # Set podman_repository_tag if not defined
     - name: Register variable (podman_repository_tag)...
-      set_fact:
+      ansible.builtin.set_fact:
         podman_repository_tag: "{{ podman_repository_tag | default('latest') }}"
 
     # Show information message
     - name: Information message
       ansible.builtin.debug:
-        msg: "Export podman image {{ podman_image_name }} from repository {{ podman_repository_url }}:{{ podman_repository_tag }}. This may take a while..."
+        msg: Export podman image {{ podman_image_name }} from repository {{ podman_repository_url }}:{{ podman_repository_tag }}. This may take a while...
 
     # Pull image from repository
-    - name: "Pull {{ podman_image_name }} image from repository {{ podman_repository_url}}:{{ podman_repository_tag }}..."
+    - name: Pull {{ podman_image_name }} image from repository {{ podman_repository_url}}:{{ podman_repository_tag }}...
       containers.podman.podman_image:
         name: "{{ podman_repository_url }}"
         tag: "{{ podman_repository_tag }}"
@@ -49,13 +49,15 @@
 
     # Delete file if present
     - name: Delete file if present...
+      become: true
       ansible.builtin.file:
-        path: "{{ podman_export_folder}}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar"
+        path: "{{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar"
         state: absent
 
     # Save image to tar file using shell command
-    - name: "Save Podman image to tar file in folder {{ podman_export_folder }}..."
-      ansible.builtin.shell: "podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ podman_repository_url }}:{{ podman_repository_tag }}"
+    - name: Save Podman image to tar file in folder {{ podman_export_folder }}...
+      ansible.builtin.shell: podman image save --quiet -o {{ podman_export_folder }}/{{ podman_image_name }}_{{ podman_repository_tag }}.tar {{ 
+        podman_repository_url }}:{{ podman_repository_tag }}
       register: save_result
 
 #########################################################
@@ -64,10 +66,10 @@
 
 # Unset variables
 - name: Unset variables...
-  set_fact:
-    podman_image_name: null
-    podman_repository_url: null
-    podman_repository_tag: null
-    podman_export_folder: null
-    pull_result: null
-    save_result: null
+  ansible.builtin.set_fact:
+    podman_image_name:
+    podman_repository_url:
+    podman_repository_tag:
+    podman_export_folder:
+    pull_result:
+    save_result:

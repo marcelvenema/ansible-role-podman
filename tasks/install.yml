@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Podman installation                                 ##
 #########################################################
@@ -12,25 +11,19 @@
 # Check if Podman is installed
 - name: Determine Podman container infrastructure...
   ansible.builtin.debug:
-    msg: "Podman is not installed. Please wait while installing Podman prerequisites..."
+    msg: Podman is not installed. Please wait while installing Podman prerequisites...
   when: '"podman" not in ansible_facts.packages'
 
 #########################################################
 ## Uninstall before install                            ##
 #########################################################
 
-# Set uninstall if not defined
-- name: Gather variables (uninstall)...
-  ansible.builtin.set_fact:
-    podman_vars.uninstall: false
-  when: podman_vars.uninstall is not defined
-
 # Run uninstall if Podman is installed and uninstall is set
 - name: Run uninstall action if Podman is installed...
   ansible.builtin.include_tasks: uninstall.yml
   when:
     - '"podman" in ansible_facts.packages'
-    - podman_vars.uninstall == true
+    - podman_vars.uninstall | bool
 
 #########################################################
 ## Pre-installation                                    ##
@@ -52,7 +45,7 @@
 - name: Install Podman packages on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: "{{ podman_vars.rpm_packages}}"
+    name: "{{ podman_vars.rpm_packages }}"
     state: present
   when: ansible_pkg_mgr == 'apt'
 
@@ -61,7 +54,7 @@
   become: true
   ansible.builtin.systemd:
     name: podman
-    enabled: yes
+    enabled: true
     state: started
 
 #########################################################
@@ -72,13 +65,13 @@
 - name: Start configure task...
   ansible.builtin.include_tasks: configure.yml
   vars:
-    action: "configure"
+    action: configure
 
 #########################################################
 ## Post-install                                        ##
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-#    <variable>: null
+# - name: Unset variables...
+#   ansible.builtin.set_fact:
+#     <variable>: null

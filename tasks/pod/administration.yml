@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Podman Pods administration module                   ##
 #########################################################
@@ -7,8 +6,8 @@
 # Validate global variables.
 - name: Validate variables for Podman pods module...
   ansible.builtin.assert:
-    that: "varitem is defined"
-    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    that: varitem is defined
+    fail_msg: Required variable '{{ varitem }}' has not been provided.
     quiet: true
   loop_control:
     loop_var: varitem
@@ -23,12 +22,11 @@
 - name: Create Podman pod...
   when: action == "create_pod"
   block:
-
     # Validate global variables.
     - name: Validate variables for Podman Pod module...
       ansible.builtin.assert:
-        that: "varitem is defined"
-        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        that: varitem is defined
+        fail_msg: Required variable '{{ varitem }}' has not been provided.
         quiet: true
       loop_control:
         loop_var: varitem
@@ -36,17 +34,17 @@
         - container_name
 
     # Create Podman pod quadlet to isolate one or more containers in running environment
-    - name: "Create Podman Pod with name {{ container_pod | splitext | first }}..."
+    - name: Create Podman Pod with name {{ container_pod | splitext | first }}...
       become: true
       become_user: "{{ podman_vars.service_user }}"
       containers.podman.podman_pod:
         name: "{{ container_pod | splitext | first }}"
-        debug: true
+        debug: false
         state: quadlet
-        network: "{{ container_network }}.network"
+        network: "{{ container_network | default(omit) }}"
         publish: "{{ container_pod_ports | default(omit) }}"
         quadlet_filename: "{{ container_pod }}"
-        quadlet_file_mode: '0640'
+        quadlet_file_mode: "0640"
         quadlet_options:
           - |
             [Install]
@@ -54,9 +52,9 @@
       register: podman_pod_create_result
 
     # If result is failed, stop playbook
-    - name: "Check create pod result..."
+    - name: Check create pod result...
       ansible.builtin.fail:
-        msg: "Podman pod creation failed."
+        msg: Podman pod creation failed.
       when: podman_pod_create_result is failed
 
 #########################################################
@@ -67,11 +65,10 @@
 - name: Destroy Podman pod...
   when: action == "destroy_pod"
   block:
-
     # Show information message
-    - name: "This part is not (yet) implemented."
+    - name: This part is not (yet) implemented.
       ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
+        msg: This part is not (yet) implemented.
 
     # Stop playbook
     - name: Stop playbook
@@ -82,10 +79,9 @@
 #########################################################
 
 # Restart pod
-- name: restart Podman pod...
+- name: Restart Podman pod...
   when: action == "restart_pod"
   block:
-
     # Fetch proper userID for user based D-bus interaction
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
@@ -93,7 +89,7 @@
         key: "{{ podman_vars.service_user }}"
 
     # Restart container through systemd
-    - name: "Restart pod ({{ container_pod | splitext | first }})..."
+    - name: Restart pod ({{ container_pod | splitext | first }})...
       become: true
       become_user: "{{ podman_vars.service_user }}"
       ansible.builtin.systemd:
@@ -101,13 +97,13 @@
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}"
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
       register: podman_pod_restart_result
 
     # If result is failed, stop playbook
-    - name: "Check restart pod result..."
+    - name: Check restart pod result...
       ansible.builtin.fail:
-        msg: "Podman pod restart failed."
+        msg: Podman pod restart failed.
       when: podman_pod_restart_result is failed
 
 #########################################################
@@ -117,6 +113,6 @@
 # Unset variables
 - name: Unset variables...
   ansible.builtin.set_fact:
-    podman_pod_create_result: null
-    podman_pod_restart_result: null
-    podman_pod_destroy_result: null
+    podman_pod_create_result:
+    podman_pod_restart_result:
+    podman_pod_destroy_result:

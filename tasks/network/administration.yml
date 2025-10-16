@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Podman Networks administration module               ##
 #########################################################
@@ -7,8 +6,8 @@
 # Validate global variables.
 - name: Validate variables for Podman pods module...
   ansible.builtin.assert:
-    that: "varitem is defined"
-    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    that: varitem is defined
+    fail_msg: Required variable '{{ varitem }}' has not been provided.
     quiet: true
   loop_control:
     loop_var: varitem
@@ -23,9 +22,8 @@
 - name: Create Podman network...
   when: action == "create_network"
   block:
-
     # Create Podman network to isolate one or more containers in running environment
-    - name: "Create Podman Network with name {{ container_network }}..."
+    - name: Create Podman Network with name {{ container_network }}...
       become: true
       become_user: "{{ podman_vars.service_user }}"
       containers.podman.podman_network:
@@ -35,9 +33,9 @@
       register: podman_network_create_result
 
     # If result is failed, stop playbook
-    - name: "Check create network result..."
+    - name: Check create network result...
       ansible.builtin.fail:
-        msg: "Podman network creation failed."
+        msg: Podman network creation failed.
       when: podman_network_create_result is failed
 
 #########################################################
@@ -48,11 +46,10 @@
 - name: Destroy Podman network...
   when: action == "destroy_network"
   block:
-
     # Show information message
-    - name: "This part is not (yet) implemented."
+    - name: This part is not (yet) implemented.
       ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
+        msg: This part is not (yet) implemented.
 
     # Stop playbook
     - name: Stop playbook
@@ -65,4 +62,4 @@
 # Unset variables
 - name: Unset variables...
   ansible.builtin.set_fact:
-    podman_network_create_result: null
+    podman_network_create_result:

@@ -1,11 +1,10 @@
 ---
-
 #########################################################
 ## Podman Volumes module                               ##
 #########################################################
 
 # register variables to facts when looped play
-- name: "Register variables (looped)"
+- name: Register variables (looped)
   ansible.builtin.set_fact:
     container_repository_url: "{{ item.value.container_repository_url }}"
     container_name: "{{ item.value.container_name }}"
@@ -13,17 +12,17 @@
     container_volumes: "{{ item.value.container_volumes }}"
     container_quadlet_options: "{{ item.value.container_quadlet_options }}"
     container_env: "{{ item.value.container_env | default(omit) }}"
-    #volume_source_folder: "{{ item.value.volume_source_folder | default(omit) }}"
+    # volume_source_folder: "{{ item.value.volume_source_folder | default(omit) }}"
     volume_mode: "{{ item.value.volume_mode | default(omit) }}"
-    #volume_destination_folder: "{{ item.value.volume_destination_folder | default(omit) }}"
+  # volume_destination_folder: "{{ item.value.volume_destination_folder | default(omit) }}"
   when:
-   - item.value.container_name is defined
+    - item.value.container_name is defined
 
 # Validate global variables.
 - name: Validate variables for Podman Volumes module...
   ansible.builtin.assert:
-    that: "varitem is defined"
-    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    that: varitem is defined
+    fail_msg: Required variable '{{ varitem }}' has not been provided.
     quiet: true
   loop_control:
     loop_var: varitem
@@ -38,12 +37,11 @@
 - name: Create container volume folders...
   when: action == "create_volumes"
   block:
-
     # Validate variables with loop
     - name: Validate variables for copying files to container volume folders...
       ansible.builtin.assert:
-        that: "varitem is defined"
-        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        that: varitem is defined
+        fail_msg: Required variable '{{ varitem }}' has not been provided.
         quiet: true
       loop_control:
         loop_var: varitem
@@ -62,10 +60,10 @@
         path: "{{ item.split(':')[0] }}"
         state: directory
         owner: "{{ volume_owner | default(podman_vars.service_user) }}"
-        group: "{{ volume_group | default(podman_vars.service_user) }}"
+        group: "{{ volume_group | default(podman_vars.service_group) }}"
         mode: "{{ volume_mode | default('0774') }}"
       with_items: "{{ _container_volumes.split(',') }}"
-      when: container_volumes | length > 0
+      when: container_volumes is defined and container_volumes | length > 0
 
 #########################################################
 ## destroy_volumes                                     ##
@@ -75,7 +73,6 @@
 - name: Destroy container volume folders...
   when: action == "destroy_volumes"
   block:
-
     # Add podman_data_folder before each item in container_volumes
     - name: Gather volume folders...
       ansible.builtin.set_fact:
@@ -87,6 +84,7 @@
         path: "{{ item.split(':')[0] }}"
         state: absent
       with_items: "{{ _container_volumes.split(',') }}"
+      when: container_volumes is defined and container_volumes | length > 0
 
 #########################################################
 ## copy_to_volume                                      ##
@@ -96,12 +94,11 @@
 - name: Copy files to container volume folders...
   when: action == "copy_to_volume"
   block:
-
     # Validate variables with loop
     - name: Validate variables for copying files to container volume folders...
       ansible.builtin.assert:
-        that: "varitem is defined"
-        fail_msg: "Required variable '{{ varitem }}' has not been provided."
+        that: varitem is defined
+        fail_msg: Required variable '{{ varitem }}' has not been provided.
         quiet: true
       loop_control:
         loop_var: varitem
@@ -125,6 +122,6 @@
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-#    <variable>: null
+# - name: Unset variables...
+#   ansible.builtin.set_fact:
+#     <variable>: null

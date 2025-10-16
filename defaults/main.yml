@@ -16,35 +16,35 @@ podman:
   token: ""
 
   # packages is a list of packages to be installed for Podman. example: ["podman", "podman-docker"].
-  rpm_packages: ["podman", "container-selinux", "systemd-container", "acl"]
-
+  rpm_packages: [podman, container-selinux, systemd-container, acl, bind-utils]
   # metadata contains information about the role.
   metadata:
-    name: "podman"
-    description: "RedHat Podman container management service."
-    version: "1.0.0"
+    name: podman
+    description: RedHat Podman container management service.
+    version: 1.0.0
     maintainer: ""
     maintainer_email: ""
 
   # data_folder is the root folder where the container data is stored. example: "/data" or "/var/lib/podman".
-  data_folder: "/data"
+  data_folder: /data
   # name of user to run podman service
-  service_user: "podman"
+  service_user: podman
   # password of user to run podman service
   # service_user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
   # name of group to run podman service
-  service_group: "podman"
-# uninstall indicates if Podman should be uninstalled or not. example: true or false. Default is false.
+  service_group: podman
+  # uninstall indicates if Podman should be uninstalled or not. example: true or false. Default is false.
   uninstall: false
 
   # default_subnet_pool is the default subnet pool used for Podman containers.
-  default_subnet_pool: "192.168.244.0/17"
+  default_subnet_pool: 192.168.244.0/17
 
   # secrets contains the configuration for the vault used for storing secrets and configuration data.
   secrets:
     # secret_name is the unique id of the vault used for storing secrets and configuration data. default is {{ansible_fqdn }}.
     secret_name: "{{ ansible_fqdn | replace('.', '-') }}"
     # secret_engine_name is the name of the vault used for storing secrets and configuration data. example: "nexus-repository".
-    secret_engine_name: "podman"
-    # <container_name>_secret_engine_description is the description of the vault used for storing secrets and configuration data. example: "Secrets for Sonatype Nexus Repository.".
-    secret_engine_description: "Secrets for RedHat Podman."
+    secret_engine_name: podman
+    # <container_name>_secret_engine_description is the description of the vault used for storing secrets and configuration data.
+    # example: "Secrets for Sonatype Nexus Repository.".
+    secret_engine_description: Secrets for RedHat Podman.
