@@ -17,7 +17,7 @@
 
 # If action variable is not defined, gather status of the service and set action variable
 - name: Gather action variable status...
-  ansible.builtin.include_tasks: set_action.yml
+  ansible.builtin.include_tasks: set_action_type.yml
   when: action is not defined
 
 # Show message

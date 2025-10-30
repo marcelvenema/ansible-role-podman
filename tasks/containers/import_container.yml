@@ -136,7 +136,7 @@
     # Fail when checksum is not the same
     - name: Fail when checksum is not correct
       ansible.builtin.fail:
-        msg: Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum 
+        msg: Checksum of /tmp/{{ container_name }}.tar ({{ checksum_result.stat.checksum }}) is not the same as the provided checksum ({{ repository_checksum
           }}). Cannot continue...
       when: checksum_result.stat.checksum != container_repository_checksum
 

@@ -1,9 +1,9 @@
 ---
 #########################################################
-## Set action                                          ##
+## Set action_type                                     ##
 #########################################################
 # If action variable is not defined, gather status of the service
-# If service not installed, set action to install. 
+# If service not installed, set action to install.
 # If the service is not started, set action to start.
 
 # Gather installed packages
@@ -21,7 +21,7 @@
   ansible.builtin.set_fact:
     action: start
   when:
-    - ( ('podman.socket' in ansible_facts.services) and (ansible_facts.services['podman.socket'].state is defined) and 
+    - ( ('podman.socket' in ansible_facts.services) and (ansible_facts.services['podman.socket'].state is defined) and
       (ansible_facts.services['podman.socket'].state != 'running') )
 
 # Set action to install if podman is not installed
