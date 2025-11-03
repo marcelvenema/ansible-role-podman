@@ -138,23 +138,6 @@
         msg: Restarted container ({{ container_name }}) with result {{ restart_result.Result }}
 
 #########################################################
-## Update container                                    ##
-#########################################################
-
-# Update container
-- name: Update Podman container...
-  when: action == "update_container"
-  block:
-    # Show information message
-    - name: This part is not (yet) implemented.
-      ansible.builtin.debug:
-        msg: This part is not (yet) implemented.
-
-    # Stop playbook
-    - name: Stop playbook
-      ansible.builtin.meta: end_play
-
-#########################################################
 ## Export container                                    ##
 #########################################################
 
@@ -228,18 +211,18 @@
       containers.podman.podman_container:
         name: "{{ container_name }}"
         state: absent
-        force: true
+        force_delete: true
       register: delete_result
 
     # Check result
     - name: " Show delete result..."
       ansible.builtin.debug:
-        msg: Deleted container ({{ container_name }}) with result {{ delete_result.Result }}
-
+        msg: Deleted container ({{ container_name }})...
+    
     # Set set_fact:
     - name: Set set_fact...
       ansible.builtin.set_fact:
-        "{{ result_var }}": "{{ delete_result.Result }}"
+        "{{ result_var }}": "{{ delete_result }}"
 
 #########################################################
 ## Get logs from container                             ##
