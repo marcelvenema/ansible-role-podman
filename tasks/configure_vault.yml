@@ -19,12 +19,12 @@
 # Register variable (_secret_engine_name)
 - name: Register variable (secret_engine_name)...
   ansible.builtin.set_fact:
-    _secret_engine_name: "{{ podman_vars.secrets.secret_engine_name | default('devices') }}"
+    _secret_engine_name: "{{ podman_secrets_secret_engine_name | default('devices') }}"
 
 # Register variable (_secret_name)
 - name: Register variable (secret_name)...
   ansible.builtin.set_fact:
-    _secret_name: "{{ podman_vars.secrets.secret_name | default(ansible_fqdn | replace('.', '-')) }}"
+    _secret_name: "{{ podman_secrets_secret_name | default(ansible_fqdn | replace('.', '-')) }}"
 
 #########################################################
 ## Secret Engine (devices)                             ##
@@ -35,9 +35,9 @@
   ansible.builtin.include_role:
     name: openbao
   vars:
-    action: create_secret_engine
+    action_type: create_secret_engine
     secret_engine_name: "{{ _secret_engine_name }}"
-    secret_engine_description: "{{ podman_vars.secrets.secret_engine_description | default('Secrets for devices') }}"
+    secret_engine_description: "{{ podman_secrets_secret_engine_description | default('Secrets for devices') }}"
     secret_engine_type: kv
 
 #########################################################
@@ -48,22 +48,22 @@
 - name: Register variable (secret_keyvalue_podman)...
   ansible.builtin.set_fact:
     _secret_keyvalue_podman: |
-      podman_service_user: '{{ podman_vars.service_user | default('podman') }}'
-      podman_service_user_password: '{{ podman_vars.service_user_password | default('change me') }}'
-  when: podman_vars.service_user is defined
+      podman_service_user: '{{ podman_service_user | default('podman') }}'
+      podman_service_user_password: '{{ podman_service_user_password | default('change me') }}'
+  when: podman_service_user is defined
 
 - name: Register variable (secret_keyvalue)...
   ansible.builtin.set_fact:
     _secret_keyvalue: "{{ _secret_keyvalue | from_yaml | combine(_secret_keyvalue_podman | from_yaml) | to_yaml }}"
-  when: podman_vars.service_user is defined
+  when: podman_service_user is defined
 
 # Change password on OS for user podman_service_user
-- name: Change password for user {{ podman_vars.service_user }}...
+- name: Change password for user {{ podman_service_user }}...
   become: true
   ansible.builtin.user:
-    name: "{{ podman_vars.service_user }}"
-    password: "{{ podman_vars.service_user_password | password_hash('sha512') }}"
-  when: podman_vars.service_user is defined and podman_vars.service_user_password is defined
+    name: "{{ podman_service_user }}"
+    password: "{{ podman_service_user_password | password_hash('sha512') }}"
+  when: podman_service_user is defined and podman_service_user_password is defined
 
 #########################################################
 ## Store secrets                                       ##
@@ -74,7 +74,7 @@
   ansible.builtin.include_role:
     name: openbao
   vars:
-    action: create_secret
+    action_type: create_secret
     secret_engine_name: "{{ _secret_engine_name }}"
     secret_name: "{{ _secret_name }}"
     secret_keyvalue: "{{ _secret_keyvalue | from_yaml }}"

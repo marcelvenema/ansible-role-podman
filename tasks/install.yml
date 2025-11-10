@@ -23,7 +23,7 @@
   ansible.builtin.include_tasks: uninstall.yml
   when:
     - '"podman" in ansible_facts.packages'
-    - podman_vars.uninstall | bool
+    - podman_uninstall | bool
 
 #########################################################
 ## Pre-installation                                    ##
@@ -37,7 +37,7 @@
 - name: Install Podman packages on RHEL platform...
   become: true
   ansible.builtin.package:
-    name: "{{ podman_vars.rpm_packages }}"
+    name: "{{ podman_rpm_packages }}"
     state: present
   when: ansible_os_family == "RedHat"
 
@@ -45,7 +45,7 @@
 - name: Install Podman packages on Ubuntu platform...
   become: true
   ansible.builtin.apt:
-    name: "{{ podman_vars.rpm_packages }}"
+    name: "{{ podman_apt_packages }}"
     state: present
   when: ansible_pkg_mgr == 'apt'
 
@@ -65,7 +65,7 @@
 - name: Start configure task...
   ansible.builtin.include_tasks: configure.yml
   vars:
-    action: configure
+    action_type: configure
 
 #########################################################
 ## Post-install                                        ##

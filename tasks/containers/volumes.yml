@@ -35,7 +35,7 @@
 
 # Create volume folders
 - name: Create container volume folders...
-  when: action == "create_volumes"
+  when: action_type == "create_volumes"
   block:
     # Validate variables with loop
     - name: Validate variables for copying files to container volume folders...
@@ -51,7 +51,7 @@
     # Add podman_data_folder before each item in container_volumes
     - name: Gather volume folders...
       ansible.builtin.set_fact:
-        _container_volumes: "{% for volumeitem in container_volumes %}{{ podman_vars.data_folder }}/{{ volumeitem }}{% if not loop.last %},{% endif %}{% endfor %}"
+        _container_volumes: "{% for volumeitem in container_volumes %}{{ podman_data_folder }}/{{ volumeitem }}{% if not loop.last %},{% endif %}{% endfor %}"
 
     # Create folders from first part of container_volumes
     - name: Create data folders...
@@ -59,8 +59,8 @@
       ansible.builtin.file:
         path: "{{ item.split(':')[0] }}"
         state: directory
-        owner: "{{ volume_owner | default(podman_vars.service_user) }}"
-        group: "{{ volume_group | default(podman_vars.service_group) }}"
+        owner: "{{ volume_owner | default(podman_service_user) }}"
+        group: "{{ volume_group | default(podman_service_group) }}"
         mode: "{{ volume_mode | default('0774') }}"
       with_items: "{{ _container_volumes.split(',') }}"
       when: container_volumes is defined and container_volumes | length > 0
@@ -71,12 +71,12 @@
 
 # Destroy volume folders
 - name: Destroy container volume folders...
-  when: action == "destroy_volumes"
+  when: action_type == "destroy_volumes"
   block:
     # Add podman_data_folder before each item in container_volumes
     - name: Gather volume folders...
       ansible.builtin.set_fact:
-        _container_volumes: "{% for volumeitem in container_volumes %}{{ podman_vars.data_folder }}/{{ volumeitem }}{% if not loop.last %},{% endif %}{% endfor %}"
+        _container_volumes: "{% for volumeitem in container_volumes %}{{ podman_data_folder }}/{{ volumeitem }}{% if not loop.last %},{% endif %}{% endfor %}"
 
     # Destroy folders from first part of container_volumes
     - name: Destroy data folders...
@@ -92,7 +92,7 @@
 
 # Copy to volume folders
 - name: Copy files to container volume folders...
-  when: action == "copy_to_volume"
+  when: action_type == "copy_to_volume"
   block:
     # Validate variables with loop
     - name: Validate variables for copying files to container volume folders...
@@ -111,10 +111,10 @@
       become: true
       ansible.builtin.copy:
         src: "{{ volume_source_folder }}"
-        dest: "{{ podman_vars.data_folder }}{{ volume_destination_folder }}"
+        dest: "{{ podman_data_folder }}{{ volume_destination_folder }}"
         remote_src: true
-        owner: "{{ volume_owner | default(podman_vars.service_user) }}"
-        group: "{{ volume_group | default(podman_vars.service_group) }}"
+        owner: "{{ volume_owner | default(podman_service_user) }}"
+        group: "{{ volume_group | default(podman_service_group) }}"
         mode: "{{ volume_mode | default('0644') }}"
 
 #########################################################

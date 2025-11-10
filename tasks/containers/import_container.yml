@@ -35,7 +35,7 @@
     # become is true to pull into system wide (root) storage
     - name: Pull container image from repository {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.command:
         cmd: podman pull {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}
       register: pull_result
@@ -44,7 +44,7 @@
     # delete local temp file
     - name: Delete local file /tmp/{{ container_name }}.tar...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.file:
         path: /tmp/{{ container_name }}.tar
         state: absent
@@ -52,7 +52,7 @@
     # Download container to /tmp/{{ container_name }}.tar when pull is succesfull
     - name: Save container image to /tmp/{{ container_name }}.tar...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.command:
         cmd: podman save -o /tmp/{{ container_name }}.tar {{ container_repository_url }}:{{ container_repository_tag | default('latest') }}
       when: pull_result.rc == 0
@@ -147,7 +147,7 @@
 # Load image from file if pull failed
 - name: Import container image {{ container_name }} to podman...
   become: true
-  become_user: "{{ podman_vars.service_user }}"
+  become_user: "{{ podman_service_user }}"
   ansible.builtin.command: podman load -i /tmp/{{ container_name }}.tar
   register: import_result
 
@@ -160,7 +160,7 @@
 # Get image info from podman
 - name: Gather info on container image (file)...
   become: true
-  become_user: "{{ podman_vars.service_user }}"
+  become_user: "{{ podman_service_user }}"
   ansible.builtin.command:
     cmd: podman image inspect {{ image_name }}
   register: images_info
@@ -183,7 +183,7 @@
 # Add podman_data_folder before each item in container_volumes
 - name: Gather volume folders...
   ansible.builtin.set_fact:
-    _container_volumes: "{% for item in container_volumes %}{{ podman_vars.data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
+    _container_volumes: "{% for item in container_volumes %}{{ podman_data_folder }}/{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 ##################################
 # Create container               #
@@ -204,7 +204,7 @@
 # Create podman container without security options
 - name: Create container {{ container_name }} with id {{ image_id }}...
   become: true
-  become_user: "{{ podman_vars.service_user }}"
+  become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
     pod: "{{ container_pod | default(omit) }}"
@@ -233,7 +233,7 @@
 # Create podman container with security options
 - name: Create container (security_opt) with id {{ image_id }} - ({{ container_name }}) ...
   become: true
-  become_user: "{{ podman_vars.service_user }}"
+  become_user: "{{ podman_service_user }}"
   containers.podman.podman_container:
     name: "{{ container_name }}"
     pod: "{{ container_pod | default(omit) }}"
@@ -263,13 +263,13 @@
 - name: Retrieve userId to enable systemd user base...
   ansible.builtin.getent:
     database: passwd
-    key: "{{ podman_vars.service_user }}"
+    key: "{{ podman_service_user }}"
 
 # Container is not part of a pod
 # Ensure container is started and enabled
 - name: Ensure container {{ container_name }} is started and enabled...
   become: true
-  become_user: "{{ podman_vars.service_user }}"
+  become_user: "{{ podman_service_user }}"
   ansible.builtin.systemd:
     name: container_{{ container_name }}
     scope: user
@@ -277,7 +277,7 @@
     daemon_reload: true
     state: started
   environment:
-    XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
+    XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_service_user ].1 }}
   when:
     - container_pod is not defined
 

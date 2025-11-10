@@ -14,8 +14,8 @@
       loop_control:
         loop_var: varitem
       loop:
-        - podman_vars.secrets.secret_engine_name
-        - podman_vars.secrets.secret_name
+        - podman_secrets.secret_engine_name
+        - podman_secrets.secret_name
 
   # Gather Podman variables from Vault
   # TODO: include_role: openbao with action=get_secret to fetch variables and merge into podman_vars

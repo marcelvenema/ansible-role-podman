@@ -3,34 +3,22 @@
 ## Main module for Podman ansible role                 ##
 #########################################################
 
-# Merge role defaults with vault, include nested variables
-# Nested merge does not work well, so use workaround to combine variables
-- name: Gather defaults (podman)...
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/defaults/main.yml"
-    name: podman_defaults
-
-# Merge role defaults, include nested variables
-- name: Register variables (podman)...
-  ansible.builtin.set_fact:
-    podman_vars: "{{ podman_defaults.podman | combine(podman | default({}), recursive=True) }}"
-
 # If action variable is not defined, gather status of the service and set action variable
 - name: Gather action variable status...
   ansible.builtin.include_tasks: set_action_type.yml
-  when: action is not defined
+  when: action_type is not defined
 
 # Show message
 - name: Show action message
   ansible.builtin.debug:
-    msg: "Starting role {{ role_name }}... action: {{ action }}."
+    msg: "Starting role {{ role_name }}... action: {{ action_type }}."
 
 # Assert that action is in actions
-- name: Verify valid action ({{ action }})...
+- name: Verify valid action ({{ action_type }})...
   ansible.builtin.assert:
     that:
-      - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
-    fail_msg: The action '{{ action }}' is not in the list of valid actions...
+      - action_type in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: The action '{{ action_type }}' is not in the list of valid actions...
     quiet: true
 
 # TODO: Send message to Kafka bus
@@ -43,119 +31,119 @@
 # Default actions
 - name: Start install action...
   ansible.builtin.include_tasks: install.yml
-  when: action == "install"
+  when: action_type == "install"
 
 - name: Start uninstall action...
   ansible.builtin.include_tasks: uninstall.yml
-  when: action == "uninstall"
+  when: action_type == "uninstall"
 
 - name: Start configure action...
   ansible.builtin.include_tasks: configure.yml
-  when: action == "configure"
+  when: action_type == "configure"
 
 - name: Start update action...
   ansible.builtin.include_tasks: administration.yml
-  when: action == "update"
+  when: action_type == "update"
 
 - name: Start configure_vault action...
   ansible.builtin.include_tasks: configure_vault.yml
-  when: action == "configure_vault"
+  when: action_type == "configure_vault"
 
 - name: Start start action...
   ansible.builtin.include_tasks: administration.yml
-  when: action == "start"
+  when: action_type == "start"
 
 - name: Start stop action...
   ansible.builtin.include_tasks: administration.yml
-  when: action == "stop"
+  when: action_type == "stop"
 
 # -------------------------------------------------------
 # Container actions
 - name: Start start_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "start_container"
+  when: action_type == "start_container"
 
 - name: Start stop_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "stop_container"
+  when: action_type == "stop_container"
 
 - name: Start restart_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "restart_container"
+  when: action_type == "restart_container"
 
 - name: Start update_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "update_container"
+  when: action_type == "update_container"
 
 - name: Start delete_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "delete_container"
+  when: action_type == "delete_container"
 
 - name: Start export_container action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "export_container"
+  when: action_type == "export_container"
 
 - name: Start import_container action...
   ansible.builtin.include_tasks: containers/import_container.yml
-  when: action == "import_container"
+  when: action_type == "import_container"
 
 - name: Start run_container_command action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "run_container_command"
+  when: action_type == "run_container_command"
 
 - name: Start get_containers action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "get_containers"
+  when: action_type == "get_containers"
 
 - name: Start get_logs action...
   ansible.builtin.include_tasks: containers/administration.yml
-  when: action == "get_logs"
+  when: action_type == "get_logs"
 
 # -------------------------------------------------------
 # Networks actions
 - name: Start create_networks action...
   ansible.builtin.include_tasks: network/administration.yml
-  when: action == "create_network"
+  when: action_type == "create_network"
 
 - name: Start destroy_networks action...
   ansible.builtin.include_tasks: network/administration.yml
-  when: action == "destroy_network"
+  when: action_type == "destroy_network"
 
 # -------------------------------------------------------
 # Pods actions
 - name: Start create_pods action...
   ansible.builtin.include_tasks: pod/administration.yml
-  when: action == "create_pod"
+  when: action_type == "create_pod"
 
 - name: Start destroy_pods action...
   ansible.builtin.include_tasks: pod/administration.yml
-  when: action == "destroy_pod"
+  when: action_type == "destroy_pod"
 
 - name: Start restart_pod action...
   ansible.builtin.include_tasks: pod/administration.yml
-  when: action == "restart_pod"
+  when: action_type == "restart_pod"
 
 # -------------------------------------------------------
 # Images actions
 - name: Start export_image action...
   ansible.builtin.include_tasks: images/images.yml
-  when: action == "export_image"
+  when: action_type == "export_image"
 
 - name: Start import_image action...
   ansible.builtin.include_tasks: images/images.yml
-  when: action == "import_image"
+  when: action_type == "import_image"
 
 # -------------------------------------------------------
 # Volumes actions
 - name: Start create_volumes action...
   ansible.builtin.include_tasks: containers/volumes.yml
-  when: action == "create_volumes"
+  when: action_type == "create_volumes"
 
 - name: Start destroy_volumes action...
   ansible.builtin.include_tasks: containers/volumes.yml
-  when: action == "destroy_volumes"
+  when: action_type == "destroy_volumes"
 
 - name: Start copy_to_volume action...
   ansible.builtin.include_tasks: containers/volumes.yml
-  when: action == "copy_to_volume"
+  when: action_type == "copy_to_volume"
 # -------------------------------------------------------

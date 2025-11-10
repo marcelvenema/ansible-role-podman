@@ -20,7 +20,7 @@
 
 # Export Podman image
 - name: Export Podman image...
-  when: action == "export_image"
+  when: action_type == "export_image"
   block:
     # Ensure export folder is present
     - name: Assert podman_export_folder is present...

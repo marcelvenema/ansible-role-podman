@@ -9,8 +9,8 @@
   when:
     - vault_address is defined
     - vault_token is defined
-    - podman_vars.secrets.secret_engine_name is defined
-    - podman_vars.secrets.vault_id is defined
+    - podman_secrets_secret_engine_name is defined
+    - podman_secrets_vault_id is defined
 
 #########################################################
 ## Start Podman service                                ##
@@ -18,7 +18,7 @@
 
 # Start podman service.
 - name: Start Podman service
-  when: action == 'start'
+  when: action_type == 'start'
   block:
     # Start podman service
     - name: Start Podman service...
@@ -33,7 +33,7 @@
 
 # Stop podman service.
 - name: Stop Podman service
-  when: action == 'stop'
+  when: action_type == 'stop'
   block:
     # Stop podman service
     - name: Stop Podman service...
@@ -48,7 +48,7 @@
 
 # Update Podman to latest version.
 - name: Update Podman service
-  when: action == 'update'
+  when: action_type == 'update'
   block:
     # Update Podman package
     - name: Update Podman package...

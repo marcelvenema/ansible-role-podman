@@ -17,15 +17,15 @@
   register: _service_facts
 
 # Set action variable when service is not running
-- name: Register variable (action)...
+- name: Register variable (action_type)...
   ansible.builtin.set_fact:
-    action: start
+    action_type: start
   when:
     - ( ('podman.socket' in ansible_facts.services) and (ansible_facts.services['podman.socket'].state is defined) and
       (ansible_facts.services['podman.socket'].state != 'running') )
 
 # Set action to install if podman is not installed
-- name: Register variable (action)...
+- name: Register variable (action_type)...
   ansible.builtin.set_fact:
-    action: install
+    action_type: install
   when: "'podman' not in ansible_facts.packages"

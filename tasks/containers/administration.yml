@@ -20,7 +20,7 @@
 
 # Run command inside container.
 - name: Start Podman container...
-  when: action == "run_container_command"
+  when: action_type == "run_container_command"
   block:
     # Validate required variables
     - name: Validate required variables for action...
@@ -41,7 +41,7 @@
     # Run command
     - name: Run command in container...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       containers.podman.podman_container_exec:
         name: "{{ container_name }}"
         command: "{{ container_command }}"
@@ -61,18 +61,18 @@
 
 # Start container.
 - name: Start Podman container...
-  when: action == "start_container"
+  when: action_type == "start_container"
   block:
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
-        key: "{{ podman_vars.service_user }}"
+        key: "{{ podman_service_user }}"
 
     # Container is not part of a pod
     # Ensure container is started and enabled
     - name: Start container ({{ container_name }})...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.systemd:
         name: container_{{ container_name }}
         daemon_reload: true
@@ -80,7 +80,7 @@
         enabled: true
         scope: user
       environment:
-        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_service_user ].1 }}
 
 #########################################################
 ## Stop container                                      ##
@@ -88,23 +88,23 @@
 
 # Stop container.
 - name: Stop Podman container...
-  when: action == "stop_container"
+  when: action_type == "stop_container"
   block:
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
-        key: "{{ podman_vars.service_user }}"
+        key: "{{ podman_service_user }}"
 
     # Stop via systemd (quadlet-managed)
     - name: Stop container ({{ container_name }})...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.systemd:
         name: container_{{ container_name }}
         state: stopped
         scope: user
       environment:
-        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_service_user ].1 }}
 
 #########################################################
 ## Restart container                                   ##
@@ -112,24 +112,24 @@
 
 # Restart container
 - name: Restart Podman container...
-  when: action == "restart_container"
+  when: action_type == "restart_container"
   block:
     # Fetch proper userID for user based D-bus interaction
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
-        key: "{{ podman_vars.service_user }}"
+        key: "{{ podman_service_user }}"
 
     # Restart container through systemd
     - name: Restart container ({{ container_name }})...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.systemd:
         name: container_{{ container_name }}
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_service_user ].1 }}
       register: restart_result
 
     # Check result
@@ -143,7 +143,7 @@
 
 # Export container
 - name: Export Podman container...
-  when: action == "export_container"
+  when: action_type == "export_container"
   block:
     # Show information message
     - name: This part is not (yet) implemented.
@@ -162,7 +162,7 @@
 
 # Get containers
 - name: Get containers...
-  when: action == "get_containers"
+  when: action_type == "get_containers"
   block:
     # Validate required variables
     - name: Validate required variables for action...
@@ -177,7 +177,7 @@
     # List containers from podman
     - name: Gather containers from podman...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.command: podman ps --all --filter name={{ container_name }}
       register: podman_containers
 
@@ -193,7 +193,7 @@
 
 # Delete container
 - name: Delete container...
-  when: action == "delete_container"
+  when: action_type == "delete_container"
   block:
     # Validate required variables
     - name: Validate required variables for action...
@@ -207,7 +207,7 @@
     # Delete container using podman collection
     - name: Delete container ({{ container_name }})...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       containers.podman.podman_container:
         name: "{{ container_name }}"
         state: absent
@@ -231,7 +231,7 @@
 
 # Get logs from container
 - name: Get logs from container ({{ container_name }})...
-  when: action == "get_logs"
+  when: action_type == "get_logs"
   block:
     # Validate required variables
     - name: Validate required variables for action...

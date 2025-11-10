@@ -20,7 +20,7 @@
 
 # Create pod
 - name: Create Podman pod...
-  when: action == "create_pod"
+  when: action_type == "create_pod"
   block:
     # Validate global variables.
     - name: Validate variables for Podman Pod module...
@@ -36,7 +36,7 @@
     # Create Podman pod quadlet to isolate one or more containers in running environment
     - name: Create Podman Pod with name {{ container_pod | splitext | first }}...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       containers.podman.podman_pod:
         name: "{{ container_pod | splitext | first }}"
         debug: false
@@ -63,7 +63,7 @@
 
 # Destroy pod
 - name: Destroy Podman pod...
-  when: action == "destroy_pod"
+  when: action_type == "destroy_pod"
   block:
     # Show information message
     - name: This part is not (yet) implemented.
@@ -80,24 +80,24 @@
 
 # Restart pod
 - name: Restart Podman pod...
-  when: action == "restart_pod"
+  when: action_type == "restart_pod"
   block:
     # Fetch proper userID for user based D-bus interaction
     - name: Retrieve userId to enable systemd user base...
       ansible.builtin.getent:
         database: passwd
-        key: "{{ podman_vars.service_user }}"
+        key: "{{ podman_service_user }}"
 
     # Restart container through systemd
     - name: Restart pod ({{ container_pod | splitext | first }})...
       become: true
-      become_user: "{{ podman_vars.service_user }}"
+      become_user: "{{ podman_service_user }}"
       ansible.builtin.systemd:
         name: "{{ container_pod | splitext | first }}-pod"
         state: restarted
         scope: user
       environment:
-        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_vars.service_user ].1 }}
+        XDG_RUNTIME_DIR: /run/user/{{ getent_passwd[ podman_service_user ].1 }}
       register: podman_pod_restart_result
 
     # If result is failed, stop playbook
